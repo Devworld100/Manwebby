@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Beneficiary Account Management &amp; Portal - MAN Commercial Protection</title>
+  <meta name="description" content="Secure Beneficiary and Deposit Account Management System for MAN Commercial Protection.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Lato:wght@300;400;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="css/style.css?v=3.4">
+  <link rel="stylesheet" href="css/portal.css?v=1.0">
+</head>
+<body class="portal-body">
+
+  <!-- ====== TOP BAR ====== -->
+  <div class="topbar">
+    <div class="container">
+      <div class="topbar__left">
+        <span class="topbar__alert-icon"><i class="fas fa-exclamation-triangle"></i></span>
+        <a href="tel:01217338484" class="topbar__phone">24 HR CONTACT: <span class="phone-highlight">0121 733 8484</span></a>
+      </div>
+      <div class="topbar__right">
+        <div class="topbar__social">
+          <a href="https://www.linkedin.com/company/man-commercial-protection-limited/" target="_blank" rel="noopener" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+          <a href="https://www.facebook.com/MANCommercialProtection/" target="_blank" rel="noopener" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+          <a href="https://x.com/mancommercial" target="_blank" rel="noopener" aria-label="Twitter"><i class="fab fa-x-twitter"></i></a>
+          <a href="https://www.instagram.com/mancommercialprotection/" target="_blank" rel="noopener" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+        </div>
+        <a href="#" class="topbar__book-btn">BOOK A COURSE</a>
+        <a href="login.html" class="topbar__login-btn"><i class="fas fa-lock"></i> LOGIN</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== HEADER ====== -->
+  <header class="header" id="header">
+    <div class="container">
+      <a href="index.html" class="header__logo">
+        <img src="mcp-30-logo-v2.jpg" alt="MAN Commercial Protection - 30th Anniversary">
+      </a>
+      <div class="header__center">
+        <div class="header__accreditation">
+          <img src="top-accred-24.png" alt="British Security Awards Winner 2024 - Infologue Top 20">
+        </div>
+      </div>
+      <div class="header__tagline">
+        <p>PROVIDING TOTAL SECURITY SERVICES</p>
+        <p>THROUGHOUT THE UK <span class="highlight">SINCE 1993</span></p>
+      </div>
+    </div>
+  </header>
+
+  <!-- ====== MAIN NAVIGATION ====== -->
+  <nav class="main-nav" id="main-nav">
+    <div class="container">
+      <button class="nav-toggle" aria-label="Toggle navigation">
+        <span class="nav-toggle__bar"></span>
+        <span class="nav-toggle__bar"></span>
+        <span class="nav-toggle__bar"></span>
+      </button>
+
+      <ul class="nav__list" id="nav-list">
+        <li class="nav__item">
+          <a href="index.html" class="nav__link">Home</a>
+        </li>
+        <li class="nav__item">
+          <a href="about.html" class="nav__link">About <i class="fas fa-caret-down caret"></i></a>
+          <ul class="dropdown">
+            <li class="dropdown__item"><a href="about.html" class="dropdown__link">About MAN</a></li>
+            <li class="dropdown__item"><a href="about.html#history" class="dropdown__link">Our History</a></li>
+            <li class="dropdown__item"><a href="about.html#leadership" class="dropdown__link">Management Team</a></li>
+            <li class="dropdown__item"><a href="about.html#accreditations" class="dropdown__link">Accreditations</a></li>
+            <li class="dropdown__item"><a href="about.html#esg" class="dropdown__link">ESG &amp; Sustainability</a></li>
+          </ul>
+        </li>
+        <li class="nav__item">
+          <a href="services.html" class="nav__link">Services <i class="fas fa-caret-down caret"></i></a>
+          <div class="mega-menu mega-menu--services">
+            <!-- Left Col -->
+            <div>
+              <a href="services.html#event" class="mega-service-item">
+                <img src="https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=160&auto=format&fit=crop&q=80" alt="Event Security" class="mega-service-item__img">
+                <div class="mega-service-item__content">
+                  <span class="mega-service-item__title">EVENT SECURITY</span>
+                  <p class="mega-service-item__desc">Ensure your event is safe, secure and runs smoothly with our event security services.</p>
+                </div>
+              </a>
+              <a href="services.html#concierge" class="mega-service-item" style="margin-top:14px;">
+                <img src="https://images.unsplash.com/photo-1577495508048-b635879837f1?w=160&auto=format&fit=crop&q=80" alt="Concierge Security" class="mega-service-item__img">
+                <div class="mega-service-item__content">
+                  <span class="mega-service-item__title">CONCIERGE SECURITY SERVICES</span>
+                  <p class="mega-service-item__desc">We provide concierge security for a wide range of residential and commercial developments across the UK.</p>
+                </div>
+              </a>
+              <a href="services.html#cctv" class="mega-service-item" style="margin-top:14px;">
+                <img src="https://images.unsplash.com/photo-1557597774-9d273605dfa9?w=160&auto=format&fit=crop&q=80" alt="CCTV Monitoring" class="mega-service-item__img">
+                <div class="mega-service-item__content">
+                  <span class="mega-service-item__title">CCTV MONITORING</span>
+                  <p class="mega-service-item__desc">We supply a range of CCTV monitoring services for companies across the UK.</p>
+                </div>
+              </a>
+              <a href="services.html#systems" class="mega-service-item" style="margin-top:14px;">
+                <img src="https://images.unsplash.com/photo-1508974239320-0a029497e820?w=160&auto=format&fit=crop&q=80" alt="Systems Solutions" class="mega-service-item__img">
+                <div class="mega-service-item__content">
+                  <span class="mega-service-item__title">SYSTEMS SOLUTIONS</span>
+                  <p class="mega-service-item__desc">We offer specialist security systems tailored to meet the unique needs of properties and businesses.</p>
+                </div>
+              </a>
+            </div>
+            <!-- Right Col -->
+            <div>
+              <a href="services.html#keyholding" class="mega-service-item">
+                <img src="https://images.unsplash.com/photo-1558441719-ef8753234d3d?w=160&auto=format&fit=crop&q=80" alt="Keyholding" class="mega-service-item__img">
+                <div class="mega-service-item__content">
+                  <span class="mega-service-item__title">KEYHOLDING AND ALARM RESPONSE SERVICE</span>
+                  <p class="mega-service-item__desc">MAN Commercial provides alarm response and keyholding services for properties across the UK.</p>
+                </div>
+              </a>
+              <a href="services.html#manned" class="mega-service-item" style="margin-top:14px;">
+                <img src="https://images.unsplash.com/photo-1557804506-669a67965ba0?w=160&auto=format&fit=crop&q=80" alt="Manned Guarding" class="mega-service-item__img">
+                <div class="mega-service-item__content">
+                  <span class="mega-service-item__title">MANNED GUARDING SERVICES</span>
+                  <p class="mega-service-item__desc">MAN Commercial Protection provides manned guarding security services for businesses across the UK.</p>
+                </div>
+              </a>
+              <a href="training.html" class="mega-service-item" style="margin-top:14px;">
+                <img src="https://images.unsplash.com/photo-1531482615713-2afd69097998?w=160&auto=format&fit=crop&q=80" alt="Training" class="mega-service-item__img">
+                <div class="mega-service-item__content">
+                  <span class="mega-service-item__title">TRAINING</span>
+                  <p class="mega-service-item__desc">We offer a range of Security and First Aid training courses.</p>
+                </div>
+              </a>
+            </div>
+          </div>
+        </li>
+        <li class="nav__item">
+          <a href="sectors.html" class="nav__link">Sectors <i class="fas fa-caret-down caret"></i></a>
+          <ul class="dropdown">
+            <li class="dropdown__item"><a href="sectors.html#corporate" class="dropdown__link">Corporate</a></li>
+            <li class="dropdown__item"><a href="sectors.html#retail" class="dropdown__link">Retail</a></li>
+            <li class="dropdown__item"><a href="sectors.html#manufacturing" class="dropdown__link">Manufacturing Sector</a></li>
+            <li class="dropdown__item"><a href="sectors.html#public" class="dropdown__link">Public Sector</a></li>
+            <li class="dropdown__item"><a href="sectors.html#logistics" class="dropdown__link">Logistics &amp; Distribution</a></li>
+          </ul>
+        </li>
+        <li class="nav__item">
+          <a href="clients.html" class="nav__link">Clients <i class="fas fa-caret-down caret"></i></a>
+          <ul class="dropdown">
+            <li class="dropdown__item"><a href="clients.html#testimonials" class="dropdown__link">Testimonials</a></li>
+            <li class="dropdown__item"><a href="clients.html#sunseeker" class="dropdown__link">Sunseeker Case Study</a></li>
+            <li class="dropdown__item"><a href="clients.html#cfo" class="dropdown__link">The CFO Centre Story</a></li>
+          </ul>
+        </li>
+        <li class="nav__item">
+          <a href="careers.html" class="nav__link">Careers</a>
+        </li>
+        <li class="nav__item">
+          <a href="news.html" class="nav__link">News <i class="fas fa-caret-down caret"></i></a>
+          <ul class="dropdown">
+            <li class="dropdown__item"><a href="news.html" class="dropdown__link">NEWS</a></li>
+            <li class="dropdown__item"><a href="news.html#blog" class="dropdown__link">BLOG</a></li>
+          </ul>
+        </li>
+        <li class="nav__item">
+          <a href="training.html" class="nav__link">Training <i class="fas fa-caret-down caret"></i></a>
+          <ul class="dropdown">
+            <li class="dropdown__item"><a href="training.html#academy" class="dropdown__link">About The Academy</a></li>
+            <li class="dropdown__item"><a href="training.html#sia" class="dropdown__link">SIA Licence Courses</a></li>
+            <li class="dropdown__item"><a href="training.html#first-aid" class="dropdown__link">First Aid Training</a></li>
+            <li class="dropdown__item"><a href="training.html#booking" class="dropdown__link">Book a Course</a></li>
+          </ul>
+        </li>
+        <li class="nav__item">
+          <a href="contact.html" class="nav__link">Contact</a>
+        </li>
+        <li class="nav__item">
+          <a href="login.html" class="nav__link nav__link--active">Login</a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+  <div class="nav-overlay"></div>
+
+  <!-- ====== MAIN CONTENT ====== -->
+  <main class="portal-container">
+
+    <!-- ============================================================== -->
+    <!-- 1. LOGIN VIEW                                                  -->
+    <!-- ============================================================== -->
+    <div id="view-login">
+      <div class="login-wrap">
+        <div class="login-box">
+          <div style="display:inline-block; background:#fee2e2; color:var(--portal-red); font-size:0.75rem; font-weight:700; padding:0.25rem 0.75rem; border-radius:20px; text-transform:uppercase; margin-bottom:0.75rem;">
+            <i class="fas fa-lock"></i> Secure Custody Portal
+          </div>
+          <h1 class="login-box__title">Sign In</h1>
+          <p class="login-box__desc">Enter your credentials to access your protected beneficiary dashboard or admin management portal.</p>
+
+          <div id="login-error-alert" style="display:none; padding:0.75rem 1rem; background:#fee2e2; border:1px solid #fca5a5; color:#991b1b; border-radius:6px; font-size:0.85rem; margin-bottom:1.25rem;"></div>
+
+          <form id="login-form">
+            <div class="form-group" style="margin-bottom:1.25rem;">
+              <label for="login-username" style="font-size:0.85rem; font-weight:700; color:var(--portal-navy); display:block; margin-bottom:0.35rem;">Username or Email Address *</label>
+              <input type="text" id="login-username" class="admin-search-input" style="width:100%;" required placeholder="e.g. anita.johnson">
+            </div>
+
+            <div class="form-group" style="margin-bottom:1.5rem;">
+              <label for="login-password" style="font-size:0.85rem; font-weight:700; color:var(--portal-navy); display:block; margin-bottom:0.35rem;">Password *</label>
+              <input type="password" id="login-password" class="admin-search-input" style="width:100%;" required placeholder="Enter password">
+            </div>
+
+            <button type="submit" class="btn btn--primary btn--lg" style="width:100%; font-weight:800;">
+              <i class="fas fa-sign-in-alt"></i> Login
+            </button>
+          </form>
+        </div>
+
+        <div class="login-side">
+          <div>
+            <h4><i class="fas fa-shield-alt"></i> Vault Custody Access</h4>
+            <p>Protected role-based portal for authorized claimants and administrators managing physical vault deposits and estate documentation.</p>
+
+            <div class="login-security-notice" style="background:rgba(255,255,255,0.06); border:1px solid rgba(200,169,81,0.3); border-radius:8px; padding:1.15rem; margin:1.25rem 0;">
+              <h6 style="color:var(--portal-gold); font-size:0.85rem; font-weight:800; text-transform:uppercase; margin-bottom:0.6rem; letter-spacing:0.5px;">
+                <i class="fas fa-shield-halved"></i> Institutional Vault Standards
+              </h6>
+              <ul style="font-size:0.82rem; color:#cbd5e1; list-style:none; padding:0; margin:0; line-height:1.75;">
+                <li><i class="fas fa-check-circle text-gold" style="color:var(--portal-gold); margin-right:6px;"></i> SIA Approved &amp; Highfield Certified Vault</li>
+                <li><i class="fas fa-check-circle text-gold" style="color:var(--portal-gold); margin-right:6px;"></i> ISO 9001:2015 Assured Escrow Custody</li>
+                <li><i class="fas fa-check-circle text-gold" style="color:var(--portal-gold); margin-right:6px;"></i> Multi-Factor Encrypted Access</li>
+                <li><i class="fas fa-check-circle text-gold" style="color:var(--portal-gold); margin-right:6px;"></i> Immutable Audit-Logged Mandate Releases</li>
+              </ul>
+            </div>
+
+            <div style="font-size:0.8rem; color:#94a3b8; line-height:1.5; margin-bottom:1rem;">
+              For credentials verification or mandate registration, contact the Solihull Operations Control Room at <strong style="color:#ffffff;">0121 733 8484</strong> or <a href="mailto:info@mancommercialprotection.co.uk" style="color:var(--portal-gold); text-decoration:none;">info@mancommercialprotection.co.uk</a>.
+            </div>
+          </div>
+
+          <div style="font-size:0.75rem; color:#94a3b8;">
+            &copy; 2026 MAN Commercial Protection &bull; 256-Bit Encrypted
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- 2. USER DASHBOARD COMPONENT (Protected View for User Role)     -->
+    <!-- ============================================================== -->
+    <div id="view-user-dashboard" style="display:none;">
+      <div class="user-dashboard-card">
+        <!-- Header with Avatar & Status -->
+        <div class="user-dashboard-header">
+          <div class="user-dashboard-header__profile">
+            <!-- Bound Avatar / Profile Image -->
+            <img id="user-dash-avatar" src="" alt="Profile Image" class="dashboard-avatar">
+            <div class="dashboard-title-wrap">
+              <h2 id="user-dash-header-name">Beneficiary Dashboard</h2>
+              <div style="display:flex; align-items:center; gap:0.5rem;">
+                <span id="user-dash-status" class="role-tag">Active</span>
+                <span style="font-size:0.8rem; color:#cbd5e1;"><i class="fas fa-lock"></i> Protected View (Read-Only)</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
+            <button id="btn-user-dash-cert" class="btn btn--primary" onclick="window.PortalUI.openCertModal()" style="box-shadow:0 4px 12px rgba(0,0,0,0.2);">
+              <i class="fas fa-certificate text-gold" style="color:var(--portal-gold);"></i> View Certificate of Deposit
+            </button>
+            <button class="btn btn--outline" onclick="window.PortalUI.openCollectionNoticeModal()" style="color:#ffffff; border-color:var(--portal-gold); background:rgba(200, 169, 81, 0.15);">
+              <i class="fas fa-truck-ramp-box" style="color:var(--portal-gold);"></i> Submit 2-Day Notice
+            </button>
+            <button class="btn btn--outline btn-portal-logout" style="color:#ffffff; border-color:rgba(255,255,255,0.4);">
+              <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+          </div>
+        </div>
+
+        <!-- 5-Step Claim Lifecycle Progress Stepper -->
+        <div style="padding:1.5rem 2rem 0; background:#ffffff;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+            <span style="font-size:0.78rem; font-weight:800; text-transform:uppercase; color:#64748b; letter-spacing:0.5px;">Mandate &amp; Claim Lifecycle Progress</span>
+            <span style="font-size:0.78rem; color:#059669; font-weight:700;"><i class="fas fa-circle-check"></i> Kinship Verified &bull; Stage 3 of 5</span>
+          </div>
+
+          <div class="claim-stepper">
+            <div class="step-connector">
+              <div class="step-connector-progress" id="claim-progress-bar"></div>
+            </div>
+
+            <div class="step-item completed">
+              <div class="step-circle"><i class="fas fa-check"></i></div>
+              <div class="step-title">1. Deposit Mandated</div>
+            </div>
+
+            <div class="step-item completed">
+              <div class="step-circle"><i class="fas fa-check"></i></div>
+              <div class="step-title">2. Vault Safekeeping</div>
+            </div>
+
+            <div class="step-item active" id="step-node-3">
+              <div class="step-circle"><i class="fas fa-user-shield"></i></div>
+              <div class="step-title">3. Kinship Verified</div>
+            </div>
+
+            <div class="step-item" id="step-node-4">
+              <div class="step-circle">4</div>
+              <div class="step-title">4. Collection Notice</div>
+            </div>
+
+            <div class="step-item" id="step-node-5">
+              <div class="step-circle">5</div>
+              <div class="step-title">5. Handover / Release</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Live Demurrage Accrual Card (Certificate Clause US $10.00 / DAY) -->
+        <div style="padding:0 2rem; background:#ffffff;">
+          <div class="demurrage-widget">
+            <div class="demurrage-widget__header">
+              <div style="display:flex; align-items:center; gap:0.6rem;">
+                <span style="background:var(--portal-gold); color:#0f1923; font-size:0.72rem; font-weight:900; padding:0.2rem 0.5rem; border-radius:4px; text-transform:uppercase;">Certificate Clause</span>
+                <h4 style="margin:0; font-size:1.05rem; font-weight:800;">Live Demurrage Fee &amp; Custody Accrual Calculation</h4>
+              </div>
+              <span style="font-size:0.78rem; color:#cbd5e1;"><i class="fas fa-clock-rotate-left"></i> Accruing at US $10.00 / Day</span>
+            </div>
+
+            <div class="demurrage-grid">
+              <div class="demurrage-col">
+                <div class="lbl">Date of Deposit</div>
+                <div class="val" id="demurrage-deposit-date" style="font-size:1.05rem; color:#ffffff;">2nd May, 2019</div>
+              </div>
+              <div class="demurrage-col">
+                <div class="lbl">Days in Vault Custody</div>
+                <div class="val" id="demurrage-days">2,669 Days</div>
+              </div>
+              <div class="demurrage-col">
+                <div class="lbl">Mandated Daily Rate</div>
+                <div class="val" id="demurrage-daily-rate">$10.00 / Day</div>
+              </div>
+              <div class="demurrage-col">
+                <div class="lbl">Accrued Demurrage Fee</div>
+                <div class="val" id="demurrage-total-fee" style="color:#34d399;">$26,690.00</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bound Data Grid -->
+        <div class="user-data-grid">
+          <!-- Bound Account Owner Name -->
+          <div class="data-box">
+            <div class="data-box__label"><i class="fas fa-user-tie"></i> Account Owner Name</div>
+            <div class="data-box__value" id="user-dash-owner">-</div>
+          </div>
+
+          <!-- Bound Beneficiary Name -->
+          <div class="data-box">
+            <div class="data-box__label"><i class="fas fa-user-check"></i> Beneficiary Name</div>
+            <div class="data-box__value" id="user-dash-beneficiary">-</div>
+          </div>
+
+          <!-- Bound Deposit Amount / Asset Value -->
+          <div class="data-box">
+            <div class="data-box__label"><i class="fas fa-coins"></i> Deposit Amount / Asset Value</div>
+            <div class="data-box__value data-box__value--amount" id="user-dash-amount">-</div>
+          </div>
+        </div>
+
+        <!-- Bound Context / Detail Description Block -->
+        <div class="user-context-section">
+          <h4><i class="fas fa-file-invoice text-danger" style="color:var(--portal-red);"></i> Context / Detail Description</h4>
+          <div class="dashboard-context-text" id="user-dash-context">
+            -
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- 3. ADMIN PORTAL COMPONENT (Restricted View for Admin Role)     -->
+    <!-- ============================================================== -->
+    <div id="view-admin-portal" style="display:none;">
+      <div class="admin-card">
+        <!-- Admin Header Bar -->
+        <div class="admin-header-bar">
+          <div class="admin-header-title">
+            <h2>Admin Management Portal</h2>
+            <p class="text-muted" style="font-size:0.85rem; margin:0;">Full CRUD controls for user profiles &amp; dynamic name reassignment tool.</p>
+          </div>
+
+          <div style="display:flex; gap:0.6rem;">
+            <button class="btn btn--primary" onclick="window.PortalUI.openCreateModal()">
+              <i class="fas fa-plus-circle"></i> Create New Profile
+            </button>
+            <button class="btn btn--outline btn-portal-logout">
+              <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+          </div>
+        </div>
+
+        <!-- Executive Stats Row -->
+        <div class="admin-stats-row">
+          <div class="admin-stat-item">
+            <div class="lbl">Total Profiles</div>
+            <div class="num" id="admin-stat-total">4</div>
+          </div>
+          <div class="admin-stat-item">
+            <div class="lbl">Active Profiles</div>
+            <div class="num" id="admin-stat-active" style="color:#059669;">3</div>
+          </div>
+          <div class="admin-stat-item">
+            <div class="lbl">Pending Profiles</div>
+            <div class="num" id="admin-stat-pending" style="color:#d97706;">1</div>
+          </div>
+          <div class="admin-stat-item">
+            <div class="lbl">Total Asset Value</div>
+            <div class="num" id="admin-stat-value" style="color:var(--portal-gold);">$39.8M+</div>
+          </div>
+        </div>
+
+        <!-- Toolbar & Filter -->
+        <div class="admin-toolbar">
+          <input type="text" id="admin-search" class="admin-search-input" placeholder="Search profiles by Owner, Beneficiary, Username, Asset, or Context details...">
+          <select id="admin-status-select" style="padding:0.65rem 1rem; border-radius:8px; border:1px solid #cbd5e1; font-weight:700;">
+            <option value="ALL">All Statuses</option>
+            <option value="Active">Active</option>
+            <option value="Pending">Pending</option>
+          </select>
+        </div>
+
+        <!-- Profiles CRUD Table -->
+        <div style="overflow-x:auto;">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Beneficiary / Account</th>
+                <th>Account Owner</th>
+                <th>Deposit Amount / Item</th>
+                <th>Context / Background Details</th>
+                <th>Status</th>
+                <th style="text-align:right;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="admin-table-body">
+              <!-- Populated via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ============================================================== -->
+  <!-- MODALS                                                         -->
+  <!-- ============================================================== -->
+
+  <!-- Modal 1: Create Profile -->
+  <div class="portal-modal-backdrop" id="modal-create-profile">
+    <div class="portal-modal-box">
+      <div class="portal-modal-header">
+        <h3><i class="fas fa-user-plus text-danger" style="color:var(--portal-red);"></i> Create User Profile</h3>
+        <button class="portal-modal-close" style="background:none; border:none; font-size:1.4rem; cursor:pointer;">&times;</button>
+      </div>
+      <form id="create-profile-form">
+        <div class="portal-modal-body">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="create-owner-name">Account Owner Name *</label>
+              <input type="text" id="create-owner-name" required placeholder="e.g. Engineer Steven Johnson">
+            </div>
+            <div class="form-group">
+              <label for="create-beneficiary-name">Beneficiary Name *</label>
+              <input type="text" id="create-beneficiary-name" required placeholder="e.g. Anita Johnson">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="create-username">Username *</label>
+              <input type="text" id="create-username" required placeholder="e.g. anita.johnson">
+            </div>
+            <div class="form-group">
+              <label for="create-email">Email Address *</label>
+              <input type="email" id="create-email" required placeholder="anita@vault-trust.co.uk">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="create-password">Password *</label>
+              <input type="password" id="create-password" required placeholder="Enter secure password">
+            </div>
+            <div class="form-group">
+              <label for="create-status">Status</label>
+              <select id="create-status">
+                <option value="Active">Active</option>
+                <option value="Pending">Pending</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="create-deposit-amount">Deposit Amount (Numeric) *</label>
+              <input type="number" id="create-deposit-amount" required placeholder="24500000">
+            </div>
+            <div class="form-group">
+              <label for="create-currency">Currency</label>
+              <select id="create-currency">
+                <option value="USD">USD ($)</option>
+                <option value="GBP">GBP (£)</option>
+                <option value="EUR">EUR (€)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="create-deposit-item">Deposit Item / Asset Description *</label>
+            <input type="text" id="create-deposit-item" required placeholder="e.g. GOLD (490Kilos)">
+          </div>
+
+          <div class="form-group">
+            <label for="create-avatar-url">Profile Avatar URL</label>
+            <input type="url" id="create-avatar-url" placeholder="https://images.unsplash.com/..." value="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=180&auto=format&fit=crop&q=80">
+          </div>
+
+          <div class="form-group">
+            <label for="create-context-details">Context / Detail Description *</label>
+            <textarea id="create-context-details" required placeholder="Account background details, Certificate of Deposit codes, custody remarks..." style="height:80px;"></textarea>
+          </div>
+        </div>
+        <div class="portal-modal-footer">
+          <button type="button" class="btn btn--outline btn-close-modal">Cancel</button>
+          <button type="submit" class="btn btn--primary"><i class="fas fa-check"></i> Create Profile</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 2: Edit Profile -->
+  <div class="portal-modal-backdrop" id="modal-edit-profile">
+    <div class="portal-modal-box">
+      <div class="portal-modal-header">
+        <h3><i class="fas fa-edit text-danger" style="color:var(--portal-red);"></i> Edit User Profile</h3>
+        <button class="portal-modal-close" style="background:none; border:none; font-size:1.4rem; cursor:pointer;">&times;</button>
+      </div>
+      <form id="edit-profile-form">
+        <input type="hidden" id="edit-profile-id">
+        <div class="portal-modal-body">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="edit-owner-name">Account Owner Name *</label>
+              <input type="text" id="edit-owner-name" required>
+            </div>
+            <div class="form-group">
+              <label for="edit-beneficiary-name">Beneficiary Name *</label>
+              <input type="text" id="edit-beneficiary-name" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="edit-username">Username *</label>
+              <input type="text" id="edit-username" required>
+            </div>
+            <div class="form-group">
+              <label for="edit-email">Email Address *</label>
+              <input type="email" id="edit-email" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="edit-password">New Password (Leave blank to keep)</label>
+              <input type="password" id="edit-password" placeholder="Leave empty to retain">
+            </div>
+            <div class="form-group">
+              <label for="edit-status">Status</label>
+              <select id="edit-status">
+                <option value="Active">Active</option>
+                <option value="Pending">Pending</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="edit-deposit-amount">Deposit Amount</label>
+              <input type="number" id="edit-deposit-amount" required>
+            </div>
+            <div class="form-group">
+              <label for="edit-currency">Currency</label>
+              <select id="edit-currency">
+                <option value="USD">USD ($)</option>
+                <option value="GBP">GBP (£)</option>
+                <option value="EUR">EUR (€)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="edit-deposit-item">Deposit Item</label>
+            <input type="text" id="edit-deposit-item" required>
+          </div>
+
+          <div class="form-group">
+            <label for="edit-avatar-url">Profile Avatar URL</label>
+            <input type="url" id="edit-avatar-url">
+          </div>
+
+          <div class="form-group">
+            <label for="edit-context-details">Context / Detail Description</label>
+            <textarea id="edit-context-details" style="height:80px;"></textarea>
+          </div>
+        </div>
+        <div class="portal-modal-footer">
+          <button type="button" class="btn btn--outline btn-close-modal">Cancel</button>
+          <button type="submit" class="btn btn--primary"><i class="fas fa-save"></i> Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 3: Dynamic Reassignment of Names -->
+  <div class="portal-modal-backdrop" id="modal-reassign-names">
+    <div class="portal-modal-box">
+      <div class="portal-modal-header" style="background:#fffbeb; border-bottom:1px solid #fde68a;">
+        <h3 style="color:#92400e;"><i class="fas fa-arrows-rotate"></i> Dynamic Reassignment of Names</h3>
+        <button class="portal-modal-close" style="background:none; border:none; font-size:1.4rem; cursor:pointer;">&times;</button>
+      </div>
+      <form id="reassign-names-form">
+        <input type="hidden" id="reassign-profile-id">
+        <div class="portal-modal-body">
+          <p style="font-size:0.85rem; color:#475569; margin-bottom:1.25rem;">
+            Dynamically update or transfer the Account Owner and Beneficiary assignments (e.g. updating the Account Owner from a deceased individual to the verified beneficiary).
+          </p>
+
+          <div style="background:#f8fafc; border:1px solid #e2e8f0; padding:1rem; border-radius:8px; margin-bottom:1.25rem; font-size:0.88rem;">
+            <div><strong>Current Owner:</strong> <span id="reassign-current-owner" style="color:var(--portal-red);">-</span></div>
+            <div><strong>Current Beneficiary:</strong> <span id="reassign-current-beneficiary" style="color:#047857;">-</span></div>
+          </div>
+
+          <div class="form-group" style="margin-bottom:1rem;">
+            <label for="reassign-new-owner">New Account Owner Name *</label>
+            <input type="text" id="reassign-new-owner" required placeholder="New owner name">
+          </div>
+
+          <div class="form-group" style="margin-bottom:1rem;">
+            <label for="reassign-new-beneficiary">New Beneficiary Name (Optional)</label>
+            <input type="text" id="reassign-new-beneficiary" placeholder="Leave blank to keep existing or enter new beneficiary">
+          </div>
+
+          <div class="form-group">
+            <label for="reassign-note">Reassignment Justification / Legal Note *</label>
+            <textarea id="reassign-note" required placeholder="e.g. High Court Probate Grant #PB-9021 presented. Account ownership transferred." style="height:70px;"></textarea>
+          </div>
+        </div>
+        <div class="portal-modal-footer">
+          <button type="button" class="btn btn--outline btn-close-modal">Cancel</button>
+          <button type="submit" class="btn btn--primary" style="background:#d97706; border-color:#d97706;">
+            <i class="fas fa-check-double"></i> Confirm Reassignment
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 4: Certificate of Deposit Preview (Matching PDF Exactly) -->
+  <div class="portal-modal-backdrop" id="modal-cert-preview">
+    <div class="portal-modal-box" style="max-width:820px; background:#fdfcf7;">
+      <div class="portal-modal-header" style="background:#fdfcf7; border-bottom:2px solid #8c7336;">
+        <h3 style="color:#8c7336;"><i class="fas fa-certificate text-gold" style="color:var(--portal-gold);"></i> Official Certificate of Deposit</h3>
+        <button class="portal-modal-close" style="background:none; border:none; font-size:1.4rem; cursor:pointer;">&times;</button>
+      </div>
+      <div class="portal-modal-body" style="background:#f5f2e9; padding:2rem 1.5rem;">
+        <div class="certificate-preview-box">
+          <div class="certificate-header-grid">
+            <div>
+              <img src="mcp-30-logo-v2.jpg" alt="MAN Commercial Protection" style="height:55px; object-fit:contain;">
+            </div>
+            <div class="certificate-company-address">
+              <strong style="color:var(--portal-red); font-size:1.05rem;">MAN COMMERCIAL PROTECTION</strong><br>
+              5 Highlands Rd, Cranmore Ave, Shirley,<br>
+              Solihull B90 4LE,<br>
+              United Kingdom
+            </div>
+          </div>
+
+          <div class="certificate-title-banner">
+            <h2>CERTIFICATE OF DEPOSIT</h2>
+          </div>
+
+          <table class="cert-form-table">
+            <tr>
+              <td class="cert-field-label">SECURITY CODE</td>
+              <td style="width:20px; text-align:center;">:</td>
+              <td class="cert-field-value" id="cert-render-security">0147</td>
+            </tr>
+            <tr>
+              <td class="cert-field-label">TRANSACTION CODE</td>
+              <td style="text-align:center;">:</td>
+              <td class="cert-field-value" id="cert-render-transaction">529138</td>
+            </tr>
+            <tr>
+              <td class="cert-field-label">CERTIFICATE OF DEPOSIT CODE</td>
+              <td style="text-align:center;">:</td>
+              <td class="cert-field-value" id="cert-render-cert-code">316SJ17</td>
+            </tr>
+            <tr>
+              <td class="cert-field-label">DEPOSIT CODE</td>
+              <td style="text-align:center;">:</td>
+              <td class="cert-field-value" id="cert-render-deposit-code">198308MZL14</td>
+            </tr>
+            <tr>
+              <td class="cert-field-label">SERIAL NO.</td>
+              <td style="text-align:center;">:</td>
+              <td class="cert-field-value" id="cert-render-serial">01479040198308</td>
+            </tr>
+            <tr>
+              <td class="cert-field-label">ITEM(S)</td>
+              <td style="text-align:center;">:</td>
+              <td class="cert-field-value" id="cert-render-items" style="color:var(--portal-navy);">GOLD (490Kilos)</td>
+            </tr>
+            <tr>
+              <td class="cert-field-label">DATE OF DEPOSIT</td>
+              <td style="text-align:center;">:</td>
+              <td class="cert-field-value" id="cert-render-date">2nd May, 2019</td>
+            </tr>
+            <tr>
+              <td class="cert-field-label">PURPOSE OF DEPOSIT</td>
+              <td style="text-align:center;">:</td>
+              <td class="cert-field-value" id="cert-render-purpose">SAFE KEEPING</td>
+            </tr>
+            <tr>
+              <td class="cert-field-label">NAME OF DEPOSITOR</td>
+              <td style="text-align:center;">:</td>
+              <td class="cert-field-value" id="cert-render-depositor" style="color:#1d4ed8; font-weight:900;">ENGINEER STEVEN JOHNSON</td>
+            </tr>
+            <tr>
+              <td class="cert-field-label">NAME OF BENEFICIARY</td>
+              <td style="text-align:center;">:</td>
+              <td class="cert-field-value" id="cert-render-beneficiary" style="color:#0f5132;">ANITA JOHNSON &amp; TO WHOM IT MAY CONCERN<br>(MALE GENDER)</td>
+            </tr>
+          </table>
+
+          <div class="cert-remarks-box">
+            Remarks in the absence of the Depositor only the next of Kin or the Beneficiary has the mandate to claim the consignment with at least two (2) days notification prior to the collection and the balance would be calculated and pay on the date of collection.<br><br>
+            <strong><u>Received with full proof of ownership.</u></strong>
+          </div>
+
+          <div style="display:flex; justify-content:flex-end; margin-bottom:1rem;">
+            <div style="border:1.5px solid #222; padding:0.45rem 0.85rem; font-size:0.82rem; font-weight:800; background:#ffffff; text-align:center;">
+              Demurrage charges attract a fee of US $10.00<br>per DAY
+            </div>
+          </div>
+
+          <div class="cert-footer-signatures">
+            <!-- Manager Signature (RED INK) -->
+            <div class="cert-sig-line cert-sig-manager">
+              <div class="cert-handwritten-wrap">
+                <svg viewBox="0 0 240 65" class="cert-sig-svg" aria-label="Iain McCallister Signature">
+                  <path d="M18 42 C 16 26, 20 12, 26 14 C 30 15, 32 32, 34 50 M 40 44 C 44 36, 48 34, 52 40 C 56 46, 60 42, 64 38 C 68 34, 72 40, 75 44 M 84 20 C 80 32, 78 48, 85 45 C 92 42, 100 24, 106 26 C 110 28, 112 40, 116 43 C 120 45, 125 34, 130 32 C 135 30, 140 40, 146 42 M 154 34 C 158 44, 164 46, 172 42 C 180 38, 185 43, 192 43 C 200 43, 214 34, 224 40" fill="none" stroke="#cb0019" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M12 50 C 50 45, 130 47, 228 44" fill="none" stroke="#cb0019" stroke-width="1.3" stroke-linecap="round" opacity="0.85"/>
+                </svg>
+                <div class="cert-sig-script" style="color:#cb0019; font-family:'Caveat', 'Brush Script MT', cursive; font-size:1.75rem; font-weight:700; transform:rotate(-4deg); margin-top:-26px; margin-bottom:2px;">
+                  Iain McCallister
+                </div>
+              </div>
+              <div class="dotted-line">...................................................</div>
+              <div class="sig-name" style="color:#cb0019; font-weight:800;">IAIN MCCALLISTER</div>
+              <div class="sig-role" style="color:#991b1b; font-weight:700;">(GENERAL MANAGER &amp; CEO)</div>
+            </div>
+
+            <!-- Vault Seal -->
+            <div class="cert-wax-seal">
+              OFFICIAL<br>VAULT SEAL<br>★ 1993 ★
+            </div>
+
+            <!-- Depositor Signature (BLUE INK) -->
+            <div class="cert-sig-line cert-sig-other">
+              <div class="cert-handwritten-wrap">
+                <svg viewBox="0 0 240 65" class="cert-sig-svg" aria-label="Depositor Signature">
+                  <path d="M22 38 C 26 18, 34 16, 38 26 C 42 34, 38 48, 44 46 C 52 43, 58 24, 64 30 C 68 36, 66 46, 74 44 C 82 42, 88 30, 94 32 C 102 35, 106 46, 114 43 C 122 40, 130 26, 138 28 C 146 31, 150 44, 160 42 C 170 40, 184 26, 196 30 C 206 34, 214 44, 224 42" fill="none" stroke="#1d4ed8" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M28 48 C 70 44, 150 46, 224 43" fill="none" stroke="#1d4ed8" stroke-width="1.3" stroke-linecap="round" opacity="0.85"/>
+                </svg>
+                <div class="cert-sig-script" id="cert-render-sig-script-depositor" style="color:#1d4ed8; font-family:'Caveat', 'Brush Script MT', cursive; font-size:1.75rem; font-weight:700; transform:rotate(-3deg); margin-top:-26px; margin-bottom:2px;">
+                  Steven Johnson
+                </div>
+              </div>
+              <div class="dotted-line">……………………………………………</div>
+              <div class="sig-name" id="cert-render-sig-depositor" style="color:#1d4ed8; font-weight:800;">ENGINEER STEVEN JOHNSON</div>
+              <div class="sig-role" style="color:#1e40af; font-weight:700;">(DEPOSITOR)</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="portal-modal-footer" style="background:#fdfcf7;">
+        <button type="button" class="btn btn--outline" onclick="window.print()"><i class="fas fa-print"></i> Print / Export Document</button>
+        <button type="button" class="btn btn--primary btn-close-modal">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 5: 2-Day Mandated Collection Notice Form -->
+  <div class="portal-modal-backdrop" id="modal-collection-notice">
+    <div class="portal-modal-box">
+      <div class="portal-modal-header" style="background:#0f1923; color:#ffffff;">
+        <h3 style="color:var(--portal-gold);"><i class="fas fa-truck-ramp-box"></i> Mandated 2-Day Collection Notification</h3>
+        <button class="portal-modal-close" style="background:none; border:none; font-size:1.4rem; cursor:pointer; color:#ffffff;">&times;</button>
+      </div>
+      <form id="collection-notice-form">
+        <div class="portal-modal-body">
+          <div style="background:#fffbeb; border-left:4px solid #f59e0b; padding:0.85rem 1rem; border-radius:4px; margin-bottom:1.25rem; font-size:0.85rem; color:#92400e;">
+            <strong>Mandate Requirement (Certificate Clause):</strong><br>
+            <em>"at least two (2) days notification prior to the collection and the balance would be calculated and pay on the date of collection."</em>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="notice-date">Scheduled Collection Date (Min. 2 Days in Advance) *</label>
+              <input type="date" id="notice-date" required>
+            </div>
+            <div class="form-group">
+              <label for="notice-courier">Authorized Courier / Armored Escort Company *</label>
+              <input type="text" id="notice-courier" required placeholder="e.g. G4S Cash Solutions / Brinks UK">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="notice-phone">Claimant Contact Phone *</label>
+              <input type="tel" id="notice-phone" required placeholder="+44 7700 900123">
+            </div>
+            <div class="form-group">
+              <label for="notice-id-type">Identification Presented on Collection *</label>
+              <select id="notice-id-type" required>
+                <option value="UK Passport & High Court Grant">UK Passport &amp; High Court Grant</option>
+                <option value="International Passport & Certificate of Deposit">International Passport &amp; Cert of Deposit</option>
+                <option value="Diplomatic Credentials">Diplomatic Credentials</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="notice-remarks">Collection Specifics / Vault Security Instructions</label>
+            <textarea id="notice-remarks" placeholder="Provide any special instructions for the Solihull high-security vault dispatch team..." style="height:70px;"></textarea>
+          </div>
+        </div>
+        <div class="portal-modal-footer">
+          <button type="button" class="btn btn--outline btn-close-modal">Cancel</button>
+          <button type="submit" class="btn btn--primary" style="background:#059669; border-color:#059669;">
+            <i class="fas fa-paper-plane"></i> Submit Formal 2-Day Notice
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ====== FOOTER ====== -->
+  <footer class="footer" id="footer">
+    <div class="container">
+      <div class="footer__grid">
+        <div class="footer__col">
+          <div class="footer__about-logo"><img src="mcp-30-logo-v2.jpg" alt="MAN Commercial Protection"></div>
+          <p class="footer__about-text">MAN Commercial Protection Ltd is an award-winning security company providing professional security services across the UK. Founded in 1993, we have over 30 years of experience.</p>
+        </div>
+        <div class="footer__col">
+          <h4 class="footer__heading">Our Site</h4>
+          <div class="footer__links">
+            <a href="index.html" class="footer__link">Home</a>
+            <a href="about.html" class="footer__link">About</a>
+            <a href="services.html" class="footer__link">Services</a>
+            <a href="sectors.html" class="footer__link">Sectors</a>
+            <a href="clients.html" class="footer__link">Clients</a>
+            <a href="careers.html" class="footer__link">Careers</a>
+            <a href="news.html" class="footer__link">News</a>
+            <a href="training.html" class="footer__link">Training</a>
+            <a href="contact.html" class="footer__link">Contact</a>
+            <a href="login.html" class="footer__link" style="color:var(--portal-gold); font-weight:700;">Login</a>
+          </div>
+        </div>
+        <div class="footer__col">
+          <h4 class="footer__heading">Contact Us</h4>
+          <div class="footer__contact-list">
+            <div class="footer__contact-item"><i class="fas fa-map-marker-alt"></i><span>5 Highlands Court, Cranmore Avenue, Solihull, B90 4LE</span></div>
+            <div class="footer__contact-item"><i class="fas fa-phone-alt"></i><a href="tel:01217338484">0121 733 8484</a></div>
+            <div class="footer__contact-item"><i class="fas fa-envelope"></i><a href="mailto:info@mancommercialprotection.co.uk">info@mancommercialprotection.co.uk</a></div>
+          </div>
+        </div>
+      </div>
+      <div class="footer__bottom">
+        <p class="footer__copyright">&copy; 2026 MAN Commercial Protection. All Rights Reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+  <script src="js/portal-data.js"></script>
+<script src="js/portal-nav.js?v=7"></script>
+  <script src="js/portal.js"></script>
+</body>
+</html>

@@ -1,0 +1,1305 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MAN Commercial Protection — Portal Documentation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    /* ===== RESET & BASE ===== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --red: #cb0019;
+      --navy: #0f1923;
+      --navy-light: #1e3145;
+      --gold: #c8a951;
+      --gold-light: #e5cd88;
+      --emerald: #059669;
+      --amber: #d97706;
+      --slate-50: #f8fafc;
+      --slate-100: #f1f5f9;
+      --slate-200: #e2e8f0;
+      --slate-300: #cbd5e1;
+      --slate-400: #94a3b8;
+      --slate-500: #64748b;
+      --slate-600: #475569;
+      --slate-700: #334155;
+      --slate-800: #1e293b;
+      --slate-900: #0f172a;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      color: var(--slate-800);
+      background: #ffffff;
+      line-height: 1.65;
+      font-size: 10.5pt;
+    }
+
+    /* ===== PRINT CONTROLS ===== */
+    @media print {
+      body { font-size: 9.5pt; }
+      .no-print { display: none !important; }
+      .page-break { page-break-before: always; }
+      .avoid-break { page-break-inside: avoid; }
+      section { page-break-inside: avoid; }
+      .screenshot-block { page-break-inside: avoid; }
+      h2 { page-break-after: avoid; }
+      h3 { page-break-after: avoid; }
+      table { page-break-inside: auto; }
+      tr { page-break-inside: avoid; }
+      @page {
+        size: A4;
+        margin: 18mm 16mm 20mm 16mm;
+      }
+      .cover-page { height: 100vh; page-break-after: always; }
+      .print-btn-bar { display: none !important; }
+    }
+
+    @media screen {
+      body { max-width: 900px; margin: 0 auto; padding: 0 24px 60px; }
+    }
+
+    /* ===== PRINT BUTTON ===== */
+    .print-btn-bar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
+      background: var(--navy);
+      padding: 12px 24px;
+      display: flex; align-items: center; justify-content: space-between;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+    }
+    .print-btn-bar span { color: var(--gold); font-weight: 700; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; }
+    .print-btn {
+      background: var(--red);
+      color: #fff;
+      border: none;
+      padding: 10px 28px;
+      border-radius: 6px;
+      font-weight: 800;
+      font-size: 0.85rem;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      transition: all 0.2s;
+    }
+    .print-btn:hover { background: #a30014; transform: translateY(-1px); }
+
+    @media screen { body { padding-top: 70px; } }
+
+    /* ===== COVER PAGE ===== */
+    .cover-page {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      min-height: 90vh;
+      padding: 60px 40px;
+    }
+    .cover-logo { height: 90px; margin-bottom: 20px; object-fit: contain; }
+    .cover-badge {
+      display: inline-block;
+      background: var(--red);
+      color: #fff;
+      font-size: 0.7rem;
+      font-weight: 800;
+      padding: 4px 14px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 24px;
+    }
+    .cover-title {
+      font-size: 2.4rem;
+      font-weight: 900;
+      color: var(--navy);
+      line-height: 1.15;
+      margin-bottom: 12px;
+    }
+    .cover-subtitle {
+      font-size: 1.15rem;
+      color: var(--slate-500);
+      font-weight: 400;
+      margin-bottom: 40px;
+      max-width: 580px;
+    }
+    .cover-meta-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      max-width: 600px;
+      width: 100%;
+      margin-bottom: 40px;
+    }
+    .cover-meta-item {
+      background: var(--slate-50);
+      border: 1px solid var(--slate-200);
+      border-radius: 10px;
+      padding: 16px 12px;
+      text-align: center;
+    }
+    .cover-meta-item .label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--slate-400); font-weight: 700; margin-bottom: 4px; }
+    .cover-meta-item .value { font-size: 0.85rem; font-weight: 700; color: var(--navy); }
+    .cover-divider { width: 80px; height: 3px; background: var(--gold); border-radius: 2px; margin-bottom: 24px; }
+    .cover-footer { font-size: 0.75rem; color: var(--slate-400); }
+    .cover-footer strong { color: var(--red); }
+
+    /* ===== SECTION HEADINGS ===== */
+    h2 {
+      font-size: 1.5rem;
+      font-weight: 900;
+      color: var(--navy);
+      margin: 44px 0 16px;
+      padding-bottom: 8px;
+      border-bottom: 3px solid var(--red);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    h2 .section-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px; height: 32px;
+      background: var(--red);
+      color: #fff;
+      font-size: 0.8rem;
+      font-weight: 900;
+      border-radius: 6px;
+      flex-shrink: 0;
+    }
+    h3 {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: var(--navy-light);
+      margin: 28px 0 10px;
+    }
+    h4 {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--slate-700);
+      margin: 18px 0 8px;
+    }
+
+    /* ===== PARAGRAPHS & LISTS ===== */
+    p { margin-bottom: 10px; color: var(--slate-700); }
+    ul, ol { margin: 8px 0 14px 20px; }
+    li { margin-bottom: 4px; color: var(--slate-700); }
+    li strong { color: var(--navy); }
+    code {
+      background: var(--slate-100);
+      border: 1px solid var(--slate-200);
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 0.85em;
+      font-family: 'Consolas', 'Courier New', monospace;
+      color: var(--red);
+    }
+
+    /* ===== TABLES ===== */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0 20px;
+      font-size: 0.88rem;
+    }
+    thead th {
+      background: var(--navy);
+      color: #fff;
+      font-weight: 700;
+      padding: 10px 12px;
+      text-align: left;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+    thead th:first-child { border-radius: 6px 0 0 0; }
+    thead th:last-child { border-radius: 0 6px 0 0; }
+    tbody td {
+      padding: 9px 12px;
+      border-bottom: 1px solid var(--slate-200);
+      vertical-align: top;
+    }
+    tbody tr:nth-child(even) { background: var(--slate-50); }
+    tbody tr:hover { background: #fef3c7; }
+
+    /* ===== CALLOUT BOXES ===== */
+    .callout {
+      border-radius: 8px;
+      padding: 14px 18px;
+      margin: 14px 0;
+      font-size: 0.88rem;
+      line-height: 1.5;
+    }
+    .callout-info {
+      background: #eff6ff;
+      border-left: 4px solid #3b82f6;
+      color: #1e40af;
+    }
+    .callout-warning {
+      background: #fffbeb;
+      border-left: 4px solid #f59e0b;
+      color: #92400e;
+    }
+    .callout-danger {
+      background: #fef2f2;
+      border-left: 4px solid #ef4444;
+      color: #991b1b;
+    }
+    .callout-success {
+      background: #ecfdf5;
+      border-left: 4px solid #10b981;
+      color: #065f46;
+    }
+    .callout i { margin-right: 6px; }
+    .callout strong { font-weight: 800; }
+
+    /* ===== SCREENSHOTS ===== */
+    .screenshot-block {
+      margin: 20px 0;
+      border: 1px solid var(--slate-200);
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    }
+    .screenshot-block img {
+      width: 100%;
+      display: block;
+    }
+    .screenshot-caption {
+      background: var(--slate-50);
+      padding: 10px 16px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--slate-600);
+      border-top: 1px solid var(--slate-200);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .screenshot-caption i { color: var(--red); }
+
+    /* ===== FLOW DIAGRAM ===== */
+    .flow-box {
+      background: var(--slate-50);
+      border: 1px solid var(--slate-200);
+      border-radius: 10px;
+      padding: 20px;
+      margin: 16px 0;
+      font-size: 0.85rem;
+      line-height: 1.8;
+      font-family: 'Consolas', monospace;
+      text-align: center;
+    }
+    .flow-arrow { color: var(--red); font-weight: 900; margin: 0 6px; }
+
+    /* ===== STATUS BADGES ===== */
+    .badge {
+      display: inline-block;
+      font-size: 0.68rem;
+      font-weight: 800;
+      padding: 2px 8px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+    .badge-active { background: #ecfdf5; color: #065f46; }
+    .badge-pending { background: #fffbeb; color: #92400e; }
+    .badge-admin { background: #fee2e2; color: #991b1b; }
+    .badge-user { background: #eff6ff; color: #1e40af; }
+
+    /* ===== FILE REF ===== */
+    .file-ref {
+      background: var(--navy);
+      color: var(--gold);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-family: 'Consolas', monospace;
+      font-size: 0.78rem;
+      font-weight: 600;
+    }
+
+    /* ===== TOC ===== */
+    .toc {
+      background: var(--slate-50);
+      border: 1px solid var(--slate-200);
+      border-radius: 10px;
+      padding: 24px 28px;
+      margin: 24px 0;
+    }
+    .toc h3 { margin-top: 0; color: var(--navy); font-size: 1rem; }
+    .toc ol { margin: 12px 0 0 20px; }
+    .toc li { margin-bottom: 6px; font-weight: 500; color: var(--slate-600); }
+    .toc a { color: var(--red); text-decoration: none; font-weight: 600; }
+    .toc a:hover { text-decoration: underline; }
+
+    /* ===== STEPPER VISUAL ===== */
+    .stepper-visual {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      margin: 16px 0;
+      padding: 18px 12px;
+      background: var(--slate-50);
+      border-radius: 10px;
+      border: 1px solid var(--slate-200);
+      flex-wrap: wrap;
+    }
+    .step-v {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      flex: 1;
+      min-width: 110px;
+      position: relative;
+    }
+    .step-v .circle {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 0.75rem;
+      color: #fff;
+      border: 2px solid;
+    }
+    .step-v.done .circle { background: var(--emerald); border-color: var(--emerald); }
+    .step-v.active .circle { background: var(--gold); border-color: var(--gold); animation: pulse 2s infinite; }
+    .step-v.upcoming .circle { background: var(--slate-300); border-color: var(--slate-300); }
+    .step-v .label { font-size: 0.68rem; font-weight: 700; color: var(--slate-600); text-align: center; }
+    @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(200,169,81,0.4); } 50% { box-shadow: 0 0 0 8px rgba(200,169,81,0); } }
+
+    .step-connector {
+      width: 40px;
+      height: 2px;
+      background: var(--slate-300);
+      flex-shrink: 0;
+    }
+    .step-connector.done { background: var(--emerald); }
+
+    /* ===== FOOTER ===== */
+    .doc-footer {
+      margin-top: 50px;
+      padding-top: 20px;
+      border-top: 2px solid var(--slate-200);
+      text-align: center;
+      font-size: 0.75rem;
+      color: var(--slate-400);
+    }
+    .doc-footer strong { color: var(--red); }
+  </style>
+</head>
+<body>
+
+<!-- ===== PRINT BUTTON BAR ===== -->
+<div class="print-btn-bar no-print">
+  <span><i class="fas fa-file-pdf"></i> MAN Commercial Protection — Portal Documentation</span>
+  <button class="print-btn" onclick="window.print()"><i class="fas fa-print"></i> &nbsp;Save as PDF / Print</button>
+</div>
+
+<!-- ████████████████████████████████████████████████████████████████████████ -->
+<!-- COVER PAGE                                                              -->
+<!-- ████████████████████████████████████████████████████████████████████████ -->
+<div class="cover-page">
+  <img src="mcp-30-logo-v2.jpg" alt="MAN Commercial Protection" class="cover-logo">
+  <span class="cover-badge"><i class="fas fa-lock"></i> Secure Custody Portal v2</span>
+  <h1 class="cover-title">Beneficiary Account &<br>Portal Documentation</h1>
+  <p class="cover-subtitle">Complete technical reference for the Admin Management Portal and User Beneficiary Dashboard — login system, CRUD operations, modals, and data architecture.</p>
+  <div class="cover-divider"></div>
+
+  <div class="cover-meta-grid">
+    <div class="cover-meta-item">
+      <div class="label">Document Version</div>
+      <div class="value">2.0</div>
+    </div>
+    <div class="cover-meta-item">
+      <div class="label">Date</div>
+      <div class="value">8 October 2026</div>
+    </div>
+    <div class="cover-meta-item">
+      <div class="label">Classification</div>
+      <div class="value">Internal</div>
+    </div>
+  </div>
+
+  <p class="cover-footer"><strong>MAN Commercial Protection Ltd</strong> &bull; 5 Highlands Rd, Cranmore Ave, Shirley, Solihull B90 4LE &bull; 0121 733 8484</p>
+</div>
+
+<!-- ████████████████████████████████████████████████████████████████████████ -->
+<!-- TABLE OF CONTENTS                                                       -->
+<!-- ████████████████████████████████████████████████████████████████████████ -->
+<div class="page-break"></div>
+
+<div class="toc">
+  <h3><i class="fas fa-list"></i> Table of Contents</h3>
+  <ol>
+    <li><a href="#s1">System Overview</a></li>
+    <li><a href="#s2">Architecture & File Map</a></li>
+    <li><a href="#s3">Login System</a></li>
+    <li><a href="#s4">User Dashboard (Beneficiary View)</a></li>
+    <li><a href="#s5">Admin Management Portal</a></li>
+    <li><a href="#s6">Modals Reference</a></li>
+    <li><a href="#s7">Data Layer & Storage</a></li>
+    <li><a href="#s8">Navigation Session Sync</a></li>
+    <li><a href="#s9">Demo Accounts & Quick Access</a></li>
+    <li><a href="#s10">Security Notes & Production Recommendations</a></li>
+  </ol>
+</div>
+
+
+<!-- ████████████████████████████████████████████████████████████████████████ -->
+<!-- 1. SYSTEM OVERVIEW                                                      -->
+<!-- ████████████████████████████████████████████████████████████████████████ -->
+<h2 id="s1"><span class="section-num">1</span> System Overview</h2>
+
+<p>The MAN Commercial Protection <strong>Beneficiary Account Management & Portal</strong> is a single-page, role-based web application embedded in <code>login.html</code>. It provides two distinct authenticated views:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Area</th>
+      <th>Role</th>
+      <th>Access Type</th>
+      <th>Purpose</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>User Dashboard</strong></td>
+      <td><span class="badge badge-user">user</span></td>
+      <td>Read-Only (Protected)</td>
+      <td>View vault deposit details, demurrage accrual, Certificate of Deposit, and submit 2-Day Collection Notice</td>
+    </tr>
+    <tr>
+      <td><strong>Admin Portal</strong></td>
+      <td><span class="badge badge-admin">admin</span></td>
+      <td>Full CRUD (Restricted)</td>
+      <td>Manage all user profiles, dynamic name reassignment, certificate preview, statistics, and search/filter tools</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="callout callout-info">
+  <i class="fas fa-info-circle"></i>
+  <strong>Important:</strong> All data is persisted in the browser's <strong>localStorage</strong> (profiles) and <strong>sessionStorage</strong> (active session). There is no backend server — this is a fully client-side demonstration system.
+</div>
+
+
+<!-- ████████████████████████████████████████████████████████████████████████ -->
+<!-- 2. ARCHITECTURE & FILE MAP                                              -->
+<!-- ████████████████████████████████████████████████████████████████████████ -->
+<div class="page-break"></div>
+<h2 id="s2"><span class="section-num">2</span> Architecture & File Map</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>File</th>
+      <th>Role</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>login.html</code></td>
+      <td>HTML Structure</td>
+      <td>All markup: login form, user dashboard, admin portal, and 5 modal dialogs (890 lines)</td>
+    </tr>
+    <tr>
+      <td><code>js/portal-data.js</code></td>
+      <td>Data Layer</td>
+      <td><code>PortalDataStore</code> class — authentication, CRUD, demurrage calculations, session management (410 lines)</td>
+    </tr>
+    <tr>
+      <td><code>js/portal.js</code></td>
+      <td>UI Controller</td>
+      <td><code>PortalUI</code> — login handler, view routing, rendering, modal actions, toast notifications (497 lines)</td>
+    </tr>
+    <tr>
+      <td><code>js/portal-nav.js</code></td>
+      <td>Nav Sync</td>
+      <td>Global <code>syncPortalNavState()</code> — updates topbar/nav across all site pages when logged in (213 lines)</td>
+    </tr>
+    <tr>
+      <td><code>css/portal.css</code></td>
+      <td>Styling</td>
+      <td>All portal-specific styles: login box, dashboard cards, admin table, modals, toasts (705 lines)</td>
+    </tr>
+    <tr>
+      <td><code>css/style.css</code></td>
+      <td>Global Styles</td>
+      <td>Shared site-wide styles: topbar, header, navigation, footer, buttons, typography</td>
+    </tr>
+    <tr>
+      <td><code>js/main.js</code></td>
+      <td>Global JS</td>
+      <td>Mobile nav toggle, sticky header, scroll effects</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Data Flow Architecture</h3>
+<div class="flow-box">
+  <strong>login.html</strong>
+  <span class="flow-arrow">→</span> <strong>portal.js</strong> (UI Controller)
+  <span class="flow-arrow">→</span> <strong>portal-data.js</strong> (Data Store)
+  <span class="flow-arrow">→</span> <strong>localStorage</strong> / <strong>sessionStorage</strong><br><br>
+  <strong>portal-nav.js</strong>
+  <span class="flow-arrow">→</span> reads <strong>sessionStorage</strong>
+  <span class="flow-arrow">→</span> updates <strong>Topbar & Nav</strong> across all pages
+</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Storage Key</th>
+      <th>Type</th>
+      <th>Purpose</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>mcp_portal_profiles_db_v2</code></td>
+      <td>localStorage</td>
+      <td>All user profile records (JSON array) — persistent across sessions</td>
+    </tr>
+    <tr>
+      <td><code>mcp_portal_active_session_v2</code></td>
+      <td>sessionStorage</td>
+      <td>Currently authenticated user object — clears when tab closes</td>
+    </tr>
+  </tbody>
+</table>
+
+
+<!-- ████████████████████████████████████████████████████████████████████████ -->
+<!-- 3. LOGIN SYSTEM                                                         -->
+<!-- ████████████████████████████████████████████████████████████████████████ -->
+<div class="page-break"></div>
+<h2 id="s3"><span class="section-num">3</span> Login System</h2>
+
+<p>The login screen (<code>#view-login</code>) is displayed by default when no active session exists. It consists of two side-by-side panels.</p>
+
+<div class="screenshot-block avoid-break">
+  <img src="mcp-30-logo-v2.jpg" alt="Login Page" style="display:none;">
+  <img id="login-screenshot" alt="Login Page — Sign In Form & Quick Demo Access">
+  <div class="screenshot-caption"><i class="fas fa-camera"></i> Figure 1 — Login View: Sign-In Form (left) and 1-Click Demo Access panel (right)</div>
+</div>
+
+<h3>3.1 Left Panel — Login Form</h3>
+<table>
+  <thead>
+    <tr>
+      <th>Element</th>
+      <th>HTML ID</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Login Form</td>
+      <td><code>login-form</code></td>
+      <td>Main form container — triggers <code>handleLogin()</code> on submit</td>
+    </tr>
+    <tr>
+      <td>Username/Email Input</td>
+      <td><code>login-username</code></td>
+      <td>Accepts username or email address</td>
+    </tr>
+    <tr>
+      <td>Password Input</td>
+      <td><code>login-password</code></td>
+      <td>Password field (type="password")</td>
+    </tr>
+    <tr>
+      <td>Error Alert</td>
+      <td><code>login-error-alert</code></td>
+      <td>Hidden by default. Displays red error banner on failed authentication</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>3.2 Right Panel — Quick Demo Access</h3>
+<p>Three buttons auto-fill credentials and trigger login using <code>data-user</code> and <code>data-pass</code> attributes:</p>
+<ul>
+  <li><strong>Admin Console</strong> → <code>admin@mancommercial.co.uk</code></li>
+  <li><strong>Anita Johnson</strong> → <code>anita.johnson</code> (Gold 490kg)</li>
+  <li><strong>Marcus Vance</strong> → <code>marcus.vance</code> (Bonds £4.2M)</li>
+</ul>
+
+<h3>3.3 Authentication Flow</h3>
+<div class="flow-box" style="text-align:left; line-height: 2;">
+  <strong>1.</strong> User enters credentials → submits form<br>
+  <strong>2.</strong> <code>portal.js</code> calls <code>PortalData.authenticate(identifier, password)</code><br>
+  <strong>3.</strong> Data layer checks Admin credentials first (hardcoded), then searches user profiles<br>
+  <strong>4a.</strong> <span style="color:var(--emerald);">✓ Success (Admin)</span> → Session stored → Admin Portal rendered<br>
+  <strong>4b.</strong> <span style="color:var(--emerald);">✓ Success (User)</span> → Session stored → User Dashboard rendered<br>
+  <strong>4c.</strong> <span style="color:var(--red);">✗ Failure</span> → Error alert shown + toast notification<br>
+  <strong>5.</strong> <code>syncPortalNavState()</code> updates topbar/nav link to reflect logged-in state
+</div>
+
+<h3>3.4 Authentication Rules</h3>
+<table>
+  <thead>
+    <tr><th>Rule</th><th>Detail</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Admin detection</strong></td>
+      <td>Username/email matches <code>admin@mancommercial.co.uk</code> or literal <code>admin</code>, AND password is <code>AdminPass2024!</code></td>
+    </tr>
+    <tr>
+      <td><strong>User detection</strong></td>
+      <td>Username OR email matches a profile record, AND password matches the stored value</td>
+    </tr>
+    <tr>
+      <td><strong>Suspended/Inactive</strong></td>
+      <td>If a matched profile has status <code>Suspended</code> or <code>Inactive</code>, login is rejected with a deactivation message</td>
+    </tr>
+    <tr>
+      <td><strong>Case handling</strong></td>
+      <td>Identifier comparison is <strong>case-insensitive</strong> (lowercased before matching)</td>
+    </tr>
+    <tr>
+      <td><strong>Session persistence</strong></td>
+      <td>Stored in <code>sessionStorage</code> — survives page reloads but clears when the tab is closed</td>
+    </tr>
+  </tbody>
+</table>
+
+
+<!-- ████████████████████████████████████████████████████████████████████████ -->
+<!-- 4. USER DASHBOARD                                                       -->
+<!-- ████████████████████████████████████████████████████████████████████████ -->
+<div class="page-break"></div>
+<h2 id="s4"><span class="section-num">4</span> User Dashboard (Beneficiary View)</h2>
+
+<p>When a <span class="badge badge-user">user</span> role account logs in, the <code>#view-user-dashboard</code> is displayed. This is a <strong>read-only</strong> protected view showing the beneficiary's vault deposit information.</p>
+
+<div class="screenshot-block avoid-break">
+  <img id="dashboard-screenshot" alt="User Beneficiary Dashboard">
+  <div class="screenshot-caption"><i class="fas fa-camera"></i> Figure 2 — User Dashboard: Profile header, claim stepper, demurrage widget, and data grid</div>
+</div>
+
+<h3>4.1 Dashboard Header</h3>
+<table>
+  <thead>
+    <tr><th>Element</th><th>HTML ID</th><th>Description</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Profile Avatar</td><td><code>user-dash-avatar</code></td><td>Displays the user's <code>profile_image_url</code></td></tr>
+    <tr><td>Header Name</td><td><code>user-dash-header-name</code></td><td>Shows the <code>beneficiary_name</code></td></tr>
+    <tr><td>Status Badge</td><td><code>user-dash-status</code></td><td><span class="badge badge-active">Active</span>, <span class="badge badge-pending">Pending</span>, or Release Processing</td></tr>
+    <tr><td>View Certificate</td><td><code>btn-user-dash-cert</code></td><td>Opens the Certificate of Deposit modal</td></tr>
+    <tr><td>Submit 2-Day Notice</td><td>—</td><td>Opens the Mandated Collection Notice modal</td></tr>
+    <tr><td>Logout</td><td>—</td><td>Clears session and returns to login</td></tr>
+  </tbody>
+</table>
+
+<h3>4.2 Claim Lifecycle Progress Stepper (5 Steps)</h3>
+<div class="stepper-visual avoid-break">
+  <div class="step-v done">
+    <div class="circle"><i class="fas fa-check" style="font-size:0.7rem;"></i></div>
+    <div class="label">1. Deposit<br>Mandated</div>
+  </div>
+  <div class="step-connector done"></div>
+  <div class="step-v done">
+    <div class="circle"><i class="fas fa-check" style="font-size:0.7rem;"></i></div>
+    <div class="label">2. Vault<br>Safekeeping</div>
+  </div>
+  <div class="step-connector done"></div>
+  <div class="step-v active">
+    <div class="circle"><i class="fas fa-user-shield" style="font-size:0.65rem;"></i></div>
+    <div class="label">3. Kinship<br>Verified</div>
+  </div>
+  <div class="step-connector"></div>
+  <div class="step-v upcoming">
+    <div class="circle">4</div>
+    <div class="label">4. Collection<br>Notice</div>
+  </div>
+  <div class="step-connector"></div>
+  <div class="step-v upcoming">
+    <div class="circle">5</div>
+    <div class="label">5. Handover<br>/ Release</div>
+  </div>
+</div>
+<ul>
+  <li>Steps 1–2: Marked as <strong>completed</strong> (green checkmarks)</li>
+  <li>Step 3: Marked as <strong>active</strong> (pulsing gold indicator)</li>
+  <li>Steps 4–5: <strong>Upcoming</strong> (grey)</li>
+  <li>Progress bar (<code>#claim-progress-bar</code>): 55% default, advances to 80% if status is <code>Release Processing</code></li>
+</ul>
+
+<h3>4.3 Live Demurrage Accrual Widget</h3>
+<p>Calculates real-time custody fees based on the Certificate clause (<code>US $10.00 / Day</code>):</p>
+<table>
+  <thead>
+    <tr><th>Field</th><th>HTML ID</th><th>Calculation</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Date of Deposit</td><td><code>demurrage-deposit-date</code></td><td>From profile <code>date_of_deposit</code></td></tr>
+    <tr><td>Days in Vault Custody</td><td><code>demurrage-days</code></td><td><code>Math.floor((today − depositDate) / 86400000)</code></td></tr>
+    <tr><td>Mandated Daily Rate</td><td><code>demurrage-daily-rate</code></td><td>$10.00 / Day (or £/€ based on currency)</td></tr>
+    <tr><td>Accrued Demurrage Fee</td><td><code>demurrage-total-fee</code></td><td><code>days × dailyRate</code>, formatted with currency symbol</td></tr>
+  </tbody>
+</table>
+
+<div class="callout callout-success">
+  <i class="fas fa-lightbulb"></i>
+  The demurrage calculation is performed by <code>PortalData.calculateDemurrage()</code> in <code>portal-data.js</code> (lines 335–364) and updates dynamically on every dashboard render.
+</div>
+
+<h3>4.4 Bound Data Grid</h3>
+<table>
+  <thead>
+    <tr><th>Card</th><th>HTML ID</th><th>Source Field</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Account Owner Name</td><td><code>user-dash-owner</code></td><td><code>profile.owner_name</code></td></tr>
+    <tr><td>Beneficiary Name</td><td><code>user-dash-beneficiary</code></td><td><code>profile.beneficiary_name</code></td></tr>
+    <tr><td>Deposit Amount / Asset Value</td><td><code>user-dash-amount</code></td><td><code>${currency}${deposit_amount} (${deposit_item})</code></td></tr>
+  </tbody>
+</table>
+
+<h3>4.5 Context / Detail Description</h3>
+<p>A full-width text block (<code>#user-dash-context</code>) displays the <code>context_details</code> field — typically containing certificate codes, security references, mandate clauses, and reassignment logs.</p>
+
+
+<!-- ████████████████████████████████████████████████████████████████████████ -->
+<!-- 5. ADMIN MANAGEMENT PORTAL                                              -->
+<!-- ████████████████████████████████████████████████████████████████████████ -->
+<div class="page-break"></div>
+<h2 id="s5"><span class="section-num">5</span> Admin Management Portal</h2>
+
+<p>When the <span class="badge badge-admin">admin</span> account logs in, the <code>#view-admin-portal</code> is displayed. This provides full CRUD management capabilities over all beneficiary profiles.</p>
+
+<div class="screenshot-block avoid-break">
+  <img id="admin-screenshot" alt="Admin Management Portal">
+  <div class="screenshot-caption"><i class="fas fa-camera"></i> Figure 3 — Admin Portal: KPI stats, search/filter toolbar, and CRUD profiles table</div>
+</div>
+
+<h3>5.1 Admin Header Bar</h3>
+<table>
+  <thead>
+    <tr><th>Button</th><th>Function</th><th>Description</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Create New Profile</strong></td>
+      <td><code>PortalUI.openCreateModal()</code></td>
+      <td>Opens the Create Profile modal (see Section 6.1)</td>
+    </tr>
+    <tr>
+      <td><strong>Reset Defaults</strong></td>
+      <td><code>PortalData.resetDefaults()</code></td>
+      <td>Resets all profiles to the 4 original seed records (with confirmation dialog)</td>
+    </tr>
+    <tr>
+      <td><strong>Logout</strong></td>
+      <td><code>PortalData.logout()</code></td>
+      <td>Clears session and returns to login view</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>5.2 Executive Statistics Row</h3>
+<table>
+  <thead>
+    <tr><th>KPI Card</th><th>HTML ID</th><th>Calculation</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Total Profiles</td><td><code>admin-stat-total</code></td><td><code>profiles.length</code></td></tr>
+    <tr><td>Active Profiles</td><td><code>admin-stat-active</code></td><td>Count where status is <code>Active</code> or <code>Release Processing</code></td></tr>
+    <tr><td>Pending Profiles</td><td><code>admin-stat-pending</code></td><td>Count where status is <code>Pending</code></td></tr>
+    <tr><td>Total Asset Value</td><td><code>admin-stat-value</code></td><td>Sum of all <code>deposit_amount</code> (GBP converted at ×1.30 to USD)</td></tr>
+  </tbody>
+</table>
+
+<h3>5.3 Search & Filter Toolbar</h3>
+<table>
+  <thead>
+    <tr><th>Control</th><th>HTML ID</th><th>Behaviour</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Search Input</td>
+      <td><code>admin-search</code></td>
+      <td>Live-filters profiles by Owner, Beneficiary, Username, Email, Asset, Context, Security Code, or Deposit Code</td>
+    </tr>
+    <tr>
+      <td>Status Dropdown</td>
+      <td><code>admin-status-select</code></td>
+      <td>Filters by <code>All Statuses</code>, <code>Active</code>, or <code>Pending</code></td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="callout callout-info">
+  <i class="fas fa-info-circle"></i>
+  Both filters operate in <strong>real-time</strong> via <code>input</code> and <code>change</code> event listeners that re-render the table on every keystroke/selection.
+</div>
+
+<h3>5.4 Profiles CRUD Table Columns</h3>
+<table>
+  <thead>
+    <tr><th>Column</th><th>Content</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>Beneficiary / Account</strong></td><td>Avatar image, beneficiary name, username (monospace), email</td></tr>
+    <tr><td><strong>Account Owner</strong></td><td>Owner name (red), deposit reference code</td></tr>
+    <tr><td><strong>Deposit Amount / Item</strong></td><td>Formatted currency amount (green), asset description</td></tr>
+    <tr><td><strong>Context / Background</strong></td><td>Truncated context details with full text on hover tooltip</td></tr>
+    <tr><td><strong>Status</strong></td><td>Badge: <span class="badge badge-active">Active</span> / <span class="badge badge-pending">Pending</span></td></tr>
+    <tr><td><strong>Actions</strong></td><td>4 action buttons per row (see Section 5.5)</td></tr>
+  </tbody>
+</table>
+
+<h3>5.5 Row Action Buttons</h3>
+<table>
+  <thead>
+    <tr><th>Button</th><th>Icon</th><th>Function</th><th>Description</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Cert</strong></td>
+      <td><i class="fas fa-certificate" style="color:var(--gold);"></i></td>
+      <td><code>PortalUI.openCertModal(id)</code></td>
+      <td>Preview the Official Certificate of Deposit</td>
+    </tr>
+    <tr>
+      <td><strong>Edit</strong></td>
+      <td><i class="fas fa-edit" style="color:var(--slate-600);"></i></td>
+      <td><code>PortalUI.openEditModal(id)</code></td>
+      <td>Edit all profile fields via modal form</td>
+    </tr>
+    <tr>
+      <td><strong>Reassign</strong></td>
+      <td><i class="fas fa-arrows-rotate" style="color:var(--amber);"></i></td>
+      <td><code>PortalUI.openReassignModal(id)</code></td>
+      <td>Dynamic name reassignment tool</td>
+    </tr>
+    <tr>
+      <td><strong>Delete</strong></td>
+      <td><i class="fas fa-trash" style="color:var(--red);"></i></td>
+      <td><code>PortalUI.deleteProfile(id)</code></td>
+      <td>Delete profile (with browser <code>confirm()</code> dialog)</td>
+    </tr>
+  </tbody>
+</table>
+
+
+<!-- ████████████████████████████████████████████████████████████████████████ -->
+<!-- 6. MODALS REFERENCE                                                     -->
+<!-- ████████████████████████████████████████████████████████████████████████ -->
+<div class="page-break"></div>
+<h2 id="s6"><span class="section-num">6</span> Modals Reference</h2>
+
+<p>The portal uses <strong>5 modal dialogs</strong>, all sharing the <code>.portal-modal-backdrop</code> / <code>.portal-modal-box</code> CSS pattern. Modals close via ✕ button, Cancel button, or clicking the backdrop overlay.</p>
+
+<h3>6.1 Modal 1 — Create User Profile <code>#modal-create-profile</code></h3>
+
+<div class="screenshot-block avoid-break">
+  <img id="create-modal-screenshot" alt="Create User Profile Modal">
+  <div class="screenshot-caption"><i class="fas fa-camera"></i> Figure 4 — Create User Profile modal: Two-column form with all profile fields</div>
+</div>
+
+<table>
+  <thead>
+    <tr><th>Field</th><th>HTML ID</th><th>Required</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Account Owner Name</td><td><code>create-owner-name</code></td><td>✅</td><td>e.g. "Engineer Steven Johnson"</td></tr>
+    <tr><td>Beneficiary Name</td><td><code>create-beneficiary-name</code></td><td>✅</td><td>e.g. "Anita Johnson"</td></tr>
+    <tr><td>Username</td><td><code>create-username</code></td><td>✅</td><td>Login identifier</td></tr>
+    <tr><td>Email Address</td><td><code>create-email</code></td><td>✅</td><td>Must be valid email format</td></tr>
+    <tr><td>Password</td><td><code>create-password</code></td><td>✅</td><td>Default pre-filled: <code>Password123!</code></td></tr>
+    <tr><td>Status</td><td><code>create-status</code></td><td>—</td><td>Dropdown: <code>Active</code> (default) or <code>Pending</code></td></tr>
+    <tr><td>Deposit Amount</td><td><code>create-deposit-amount</code></td><td>✅</td><td>Numeric value (e.g. 24500000)</td></tr>
+    <tr><td>Currency</td><td><code>create-currency</code></td><td>—</td><td>Dropdown: <code>USD</code>, <code>GBP</code>, or <code>EUR</code></td></tr>
+    <tr><td>Deposit Item</td><td><code>create-deposit-item</code></td><td>✅</td><td>Asset description (e.g. "GOLD 490Kilos")</td></tr>
+    <tr><td>Avatar URL</td><td><code>create-avatar-url</code></td><td>—</td><td>Pre-filled with default Unsplash URL</td></tr>
+    <tr><td>Context Details</td><td><code>create-context-details</code></td><td>✅</td><td>Free-text certificate/custody details</td></tr>
+  </tbody>
+</table>
+
+<p><strong>On submit:</strong> Calls <code>PortalData.createProfile(data)</code>. Auto-generates <code>id</code>, <code>security_code</code>, <code>transaction_code</code>, <code>deposit_code</code>, <code>cert_code</code>, <code>serial_no</code>, and timestamps.</p>
+
+
+<h3>6.2 Modal 2 — Edit User Profile <code>#modal-edit-profile</code></h3>
+<p>Same fields as Create (Section 6.1), but pre-populated from the selected profile. Password field is <strong>optional</strong> — leave blank to retain the existing password.</p>
+<p><strong>On submit:</strong> Calls <code>PortalData.updateProfile(id, updates)</code>.</p>
+
+
+<h3>6.3 Modal 3 — Dynamic Reassignment of Names <code>#modal-reassign-names</code></h3>
+
+<div class="callout callout-warning">
+  <i class="fas fa-exclamation-triangle"></i>
+  <strong>Key Feature:</strong> This tool enables transferring account ownership — for example, from a deceased depositor to the verified beneficiary following a High Court Probate Grant.
+</div>
+
+<table>
+  <thead>
+    <tr><th>Field</th><th>HTML ID</th><th>Required</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Current Owner <em>(display only)</em></td><td><code>reassign-current-owner</code></td><td>—</td><td>Red text, read-only display</td></tr>
+    <tr><td>Current Beneficiary <em>(display only)</em></td><td><code>reassign-current-beneficiary</code></td><td>—</td><td>Green text, read-only display</td></tr>
+    <tr><td>New Account Owner Name</td><td><code>reassign-new-owner</code></td><td>✅</td><td>Pre-filled with current beneficiary name (suggested transfer)</td></tr>
+    <tr><td>New Beneficiary Name</td><td><code>reassign-new-beneficiary</code></td><td>—</td><td>Leave blank to keep existing</td></tr>
+    <tr><td>Reassignment Justification</td><td><code>reassign-note</code></td><td>✅</td><td>Legal note (e.g. Probate Grant reference)</td></tr>
+  </tbody>
+</table>
+
+<p><strong>On submit:</strong> Calls <code>PortalData.reassignNames()</code>. Appends a timestamped <code>[Reassignment Log: ...]</code> entry to the profile's <code>context_details</code>.</p>
+
+
+<h3>6.4 Modal 4 — Certificate of Deposit Preview <code>#modal-cert-preview</code></h3>
+
+<div class="screenshot-block avoid-break">
+  <img id="cert-screenshot" alt="Certificate of Deposit Preview Modal">
+  <div class="screenshot-caption"><i class="fas fa-camera"></i> Figure 5 — Official Certificate of Deposit: Formal document preview with all certificate fields</div>
+</div>
+
+<p>A formal document preview matching the official PDF format. All fields are dynamically bound to the selected profile:</p>
+
+<table>
+  <thead>
+    <tr><th>Certificate Field</th><th>Render ID</th><th>Source</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Security Code</td><td><code>cert-render-security</code></td><td><code>profile.security_code</code></td></tr>
+    <tr><td>Transaction Code</td><td><code>cert-render-transaction</code></td><td><code>profile.transaction_code</code></td></tr>
+    <tr><td>Certificate of Deposit Code</td><td><code>cert-render-cert-code</code></td><td><code>profile.cert_code</code></td></tr>
+    <tr><td>Deposit Code</td><td><code>cert-render-deposit-code</code></td><td><code>profile.deposit_code</code></td></tr>
+    <tr><td>Serial No.</td><td><code>cert-render-serial</code></td><td><code>profile.serial_no</code></td></tr>
+    <tr><td>Item(s)</td><td><code>cert-render-items</code></td><td><code>profile.deposit_item</code></td></tr>
+    <tr><td>Date of Deposit</td><td><code>cert-render-date</code></td><td><code>profile.date_of_deposit</code></td></tr>
+    <tr><td>Purpose of Deposit</td><td><code>cert-render-purpose</code></td><td>Always <code>"SAFE KEEPING"</code></td></tr>
+    <tr><td>Name of Depositor</td><td><code>cert-render-depositor</code></td><td><code>profile.owner_name</code> (uppercased, blue)</td></tr>
+    <tr><td>Name of Beneficiary</td><td><code>cert-render-beneficiary</code></td><td><code>profile.beneficiary_name</code> (uppercased)</td></tr>
+    <tr><td>Manager Signature</td><td><code>.cert-sig-manager</code></td><td>Iain McCallister in Red executive cursive ink</td></tr>
+    <tr><td>Depositor Signature</td><td><code>cert-render-sig-depositor</code></td><td><code>profile.owner_name</code> in Blue cursive ink</td></tr>
+  </tbody>
+</table>
+
+<p>Includes: MAN logo + Solihull address, demurrage clause box ($10.00/day), Red Manager Signature (Iain McCallister - General Manager &amp; CEO), Blue Depositor Signature (matching profile owner), Official Vault Seal (★ 1993 ★), and <strong>Print / Export</strong> button.</p>
+
+
+<h3>6.5 Modal 5 — 2-Day Mandated Collection Notice <code>#modal-collection-notice</code></h3>
+
+<p>Available to <span class="badge badge-user">user</span> role accounts. Implements the Certificate mandate clause requiring 2 days' advance notice before collection.</p>
+
+<table>
+  <thead>
+    <tr><th>Field</th><th>HTML ID</th><th>Required</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Collection Date</td><td><code>notice-date</code></td><td>✅</td><td><code>min</code> auto-set to today + 2 days</td></tr>
+    <tr><td>Authorized Courier</td><td><code>notice-courier</code></td><td>✅</td><td>e.g. "G4S Cash Solutions / Brinks UK"</td></tr>
+    <tr><td>Claimant Phone</td><td><code>notice-phone</code></td><td>✅</td><td>International format</td></tr>
+    <tr><td>ID Type</td><td><code>notice-id-type</code></td><td>✅</td><td>Dropdown: UK Passport & High Court Grant, International Passport & Cert, Diplomatic Credentials</td></tr>
+    <tr><td>Vault Instructions</td><td><code>notice-remarks</code></td><td>—</td><td>Free-text security instructions for dispatch team</td></tr>
+  </tbody>
+</table>
+
+<p><strong>On submit:</strong> Calls <code>PortalData.submitCollectionNotice()</code> which:</p>
+<ol>
+  <li>Saves <code>collection_notice</code> object on the profile record</li>
+  <li>Changes profile status to <code>Release Processing</code></li>
+  <li>Appends <code>[2-Day Mandated Collection Notice ...]</code> to <code>context_details</code></li>
+  <li>Advances the claim lifecycle stepper to step 4</li>
+</ol>
+
+
+<!-- ████████████████████████████████████████████████████████████████████████ -->
+<!-- 7. DATA LAYER & STORAGE                                                 -->
+<!-- ████████████████████████████████████████████████████████████████████████ -->
+<div class="page-break"></div>
+<h2 id="s7"><span class="section-num">7</span> Data Layer & Storage</h2>
+
+<h3>7.1 Profile Schema</h3>
+<p>Each profile object stored in <code>localStorage</code> contains the following fields:</p>
+
+<table>
+  <thead>
+    <tr><th>Field</th><th>Type</th><th>Description</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>id</code></td><td>String</td><td>UUID or generated unique identifier</td></tr>
+    <tr><td><code>auth_user_id</code></td><td>String</td><td>Internal user identifier (e.g. <code>user_anita_johnson</code>)</td></tr>
+    <tr><td><code>username</code></td><td>String</td><td>Login username</td></tr>
+    <tr><td><code>email</code></td><td>String</td><td>Login email address</td></tr>
+    <tr><td><code>password</code></td><td>String</td><td>Plaintext password (demo only)</td></tr>
+    <tr><td><code>role</code></td><td>String</td><td>Always <code>"user"</code> for profiles</td></tr>
+    <tr><td><code>owner_name</code></td><td>String</td><td>Account owner / depositor name</td></tr>
+    <tr><td><code>beneficiary_name</code></td><td>String</td><td>Beneficiary / claimant name</td></tr>
+    <tr><td><code>deposit_amount</code></td><td>Number</td><td>Numeric deposit value</td></tr>
+    <tr><td><code>deposit_item</code></td><td>String</td><td>Asset description (e.g. "GOLD 490Kilos")</td></tr>
+    <tr><td><code>currency</code></td><td>String</td><td><code>"USD"</code> | <code>"GBP"</code> | <code>"EUR"</code></td></tr>
+    <tr><td><code>profile_image_url</code></td><td>String</td><td>Avatar image URL</td></tr>
+    <tr><td><code>context_details</code></td><td>String</td><td>Full account background text, certificate codes, reassignment logs</td></tr>
+    <tr><td><code>security_code</code></td><td>String</td><td>Certificate security code</td></tr>
+    <tr><td><code>transaction_code</code></td><td>String</td><td>Certificate transaction code</td></tr>
+    <tr><td><code>deposit_code</code></td><td>String</td><td>Certificate deposit code</td></tr>
+    <tr><td><code>cert_code</code></td><td>String</td><td>Certificate of deposit code</td></tr>
+    <tr><td><code>serial_no</code></td><td>String</td><td>Certificate serial number</td></tr>
+    <tr><td><code>date_of_deposit</code></td><td>String</td><td>ISO date (YYYY-MM-DD)</td></tr>
+    <tr><td><code>status</code></td><td>String</td><td><code>"Active"</code> | <code>"Pending"</code> | <code>"Release Processing"</code></td></tr>
+    <tr><td><code>collection_notice</code></td><td>Object</td><td>Set after 2-Day Notice submission</td></tr>
+    <tr><td><code>created_at</code></td><td>String</td><td>ISO timestamp</td></tr>
+    <tr><td><code>updated_at</code></td><td>String</td><td>ISO timestamp</td></tr>
+  </tbody>
+</table>
+
+<h3>7.2 Seed Data (4 Default Profiles)</h3>
+<table>
+  <thead>
+    <tr><th>#</th><th>Beneficiary</th><th>Owner</th><th>Asset</th><th>Value</th><th>Status</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1</td>
+      <td><strong>Anita Johnson</strong></td>
+      <td>Engineer Steven Johnson</td>
+      <td>GOLD (490 Kilos)</td>
+      <td>$24,500,000</td>
+      <td><span class="badge badge-active">Active</span></td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td><strong>Marcus Vance</strong></td>
+      <td>Lord Arthur Vance (Deceased)</td>
+      <td>Sovereign Bonds & Title Deeds</td>
+      <td>£4,200,000</td>
+      <td><span class="badge badge-active">Active</span></td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td><strong>Dr. Sophia Chen</strong></td>
+      <td>Chen Wei-Ming (Estate)</td>
+      <td>Rough & Cut Diamonds (1,250 Carats)</td>
+      <td>$8,750,000</td>
+      <td><span class="badge badge-active">Active</span></td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td><strong>Estate Trustee</strong></td>
+      <td>Capt. David Harrington (Deceased)</td>
+      <td>Rare Numismatic Coins & Charter Deeds</td>
+      <td>£3,100,000</td>
+      <td><span class="badge badge-pending">Pending</span></td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>7.3 PortalData API Reference</h3>
+<table>
+  <thead>
+    <tr><th>Method</th><th>Parameters</th><th>Returns</th><th>Description</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>authenticate(id, pw)</code></td><td>String, String</td><td><code>{success, user?, message?}</code></td><td>Validates credentials against admin + profiles</td></tr>
+    <tr><td><code>getSession()</code></td><td>—</td><td><code>Object | null</code></td><td>Reads current session from sessionStorage</td></tr>
+    <tr><td><code>setSession(user)</code></td><td>Object | null</td><td>—</td><td>Writes or clears sessionStorage</td></tr>
+    <tr><td><code>logout()</code></td><td>—</td><td>—</td><td>Clears session</td></tr>
+    <tr><td><code>getProfiles(search, status)</code></td><td>String, String</td><td>Array</td><td>Filtered + searched profile list</td></tr>
+    <tr><td><code>getProfileById(id)</code></td><td>String</td><td>Object | null</td><td>Single profile lookup by ID</td></tr>
+    <tr><td><code>createProfile(data)</code></td><td>Object</td><td>Object</td><td>Creates and persists a new profile</td></tr>
+    <tr><td><code>updateProfile(id, updates)</code></td><td>String, Object</td><td><code>{success, profile?}</code></td><td>Partial update of an existing profile</td></tr>
+    <tr><td><code>reassignNames(id, opts)</code></td><td>String, Object</td><td><code>{success, profile?}</code></td><td>Transfers ownership names + appends log</td></tr>
+    <tr><td><code>deleteProfile(id)</code></td><td>String</td><td><code>{success}</code></td><td>Permanently removes a profile</td></tr>
+    <tr><td><code>calculateDemurrage(...)</code></td><td>String, Number, String</td><td>Object</td><td>Computes live demurrage fee</td></tr>
+    <tr><td><code>submitCollectionNotice(id, data)</code></td><td>String, Object</td><td><code>{success, profile?}</code></td><td>Lodges a 2-Day collection notice</td></tr>
+    <tr><td><code>getStats()</code></td><td>—</td><td>Object</td><td>Aggregate statistics (total, active, pending, value)</td></tr>
+    <tr><td><code>resetDefaults()</code></td><td>—</td><td>Boolean</td><td>Restores the 4 original seed profiles</td></tr>
+  </tbody>
+</table>
+
+
+<!-- ████████████████████████████████████████████████████████████████████████ -->
+<!-- 8. NAVIGATION SESSION SYNC                                              -->
+<!-- ████████████████████████████████████████████████████████████████████████ -->
+<div class="page-break"></div>
+<h2 id="s8"><span class="section-num">8</span> Navigation Session Sync</h2>
+
+<p><code>portal-nav.js</code> provides the <code>syncPortalNavState()</code> function, which runs on page load (<code>DOMContentLoaded</code>) and is called explicitly by <code>portal.js</code> on login/logout events.</p>
+
+<h3>8.1 Nav State by Auth Status</h3>
+
+<table>
+  <thead>
+    <tr><th>Component</th><th>Logged Out</th><th>Logged In (User)</th><th>Logged In (Admin)</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Nav Link</strong></td>
+      <td><code>Login</code></td>
+      <td><code>👤 {Name} ACTIVE</code> (gold)</td>
+      <td><code>🛡️ Admin Console</code> (gold)</td>
+    </tr>
+    <tr>
+      <td><strong>Topbar Button</strong></td>
+      <td><code>🔒 LOGIN</code> (outline)</td>
+      <td><code>✅ {NAME}</code> (gold bg) + red ⏻ logout</td>
+      <td><code>🛡️ ADMIN CONSOLE</code> (gold bg) + red ⏻ logout</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="callout callout-success">
+  <i class="fas fa-lightbulb"></i>
+  The nav sync works <strong>globally across all pages</strong> — not just <code>login.html</code>. If a user is logged in and navigates to <code>services.html</code>, the topbar will still display their authenticated state with a quick-logout power button.
+</div>
+
+<h3>8.2 Detail Link Routing</h3>
+<p><code>portal-nav.js</code> also rewrites internal anchor links (e.g. <code>services.html#event</code>) to route to the shared detail page (<code>details.html?page=event-security</code>). This is handled by the <code>connectDetailLinks()</code> function and the <code>detailLinks</code> lookup table.</p>
+
+
+<!-- ████████████████████████████████████████████████████████████████████████ -->
+<!-- 9. DEMO ACCOUNTS                                                        -->
+<!-- ████████████████████████████████████████████████████████████████████████ -->
+<h2 id="s9"><span class="section-num">9</span> Demo Accounts & Quick Access</h2>
+
+<table>
+  <thead>
+    <tr><th>Account</th><th>Username / Email</th><th>Password</th><th>Role</th><th>Access Level</th></tr>
+  </thead>
+  <tbody>
+    <tr style="background:#fef2f2;">
+      <td><strong>Admin</strong></td>
+      <td><code>admin@mancommercial.co.uk</code></td>
+      <td><code>AdminPass2024!</code></td>
+      <td><span class="badge badge-admin">admin</span></td>
+      <td>Full CRUD, Reassignment, All Certificates</td>
+    </tr>
+    <tr>
+      <td><strong>Anita Johnson</strong></td>
+      <td><code>anita.johnson</code></td>
+      <td><code>Password123!</code></td>
+      <td><span class="badge badge-user">user</span></td>
+      <td>Read-only dashboard — Gold 490kg ($24.5M)</td>
+    </tr>
+    <tr>
+      <td><strong>Marcus Vance</strong></td>
+      <td><code>marcus.vance</code></td>
+      <td><code>Password123!</code></td>
+      <td><span class="badge badge-user">user</span></td>
+      <td>Read-only dashboard — Bonds £4.2M</td>
+    </tr>
+    <tr>
+      <td><strong>Dr. Sophia Chen</strong></td>
+      <td><code>sophia.chen</code></td>
+      <td><code>Password123!</code></td>
+      <td><span class="badge badge-user">user</span></td>
+      <td>Read-only dashboard — Diamonds $8.75M</td>
+    </tr>
+    <tr>
+      <td><strong>Estate Harrington</strong></td>
+      <td><code>estate.harrington</code></td>
+      <td><code>Password123!</code></td>
+      <td><span class="badge badge-user">user</span></td>
+      <td>Read-only dashboard — Pending status</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="callout callout-info">
+  <i class="fas fa-info-circle"></i>
+  The 1-Click Demo buttons on the login page only expose Admin, Anita Johnson, and Marcus Vance. Sophia Chen and the Harrington estate can be accessed manually or created/viewed via the admin portal.
+</div>
+
+
+<!-- ████████████████████████████████████████████████████████████████████████ -->
+<!-- 10. SECURITY NOTES                                                      -->
+<!-- ████████████████████████████████████████████████████████████████████████ -->
+<div class="page-break"></div>
+<h2 id="s10"><span class="section-num">10</span> Security Notes & Production Recommendations</h2>
+
+<div class="callout callout-info" style="border-left-color:var(--emerald);">
+  <i class="fas fa-database text-emerald"></i>
+  <strong>Online Deployment Ready:</strong> The portal now includes a dedicated server-side <strong>SQLite Database</strong> (<code>db.js</code> with WAL mode) and REST API endpoints (<code>/api/auth/login</code>, <code>/api/profiles</code>, <code>/api/collection-notice</code>). All testing fields and 1-click demo buttons have been removed from the client interface for live deployment.
+</div>
+
+<table>
+  <thead>
+    <tr><th>Concern</th><th>Current State</th><th>Production Recommendation</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Password Storage</strong></td>
+      <td>Plaintext in localStorage</td>
+      <td>Server-side bcrypt/argon2 hashing with salting</td>
+    </tr>
+    <tr>
+      <td><strong>Authentication</strong></td>
+      <td>Client-side JS comparison</td>
+      <td>Server-side JWT/session token authentication with refresh tokens</td>
+    </tr>
+    <tr>
+      <td><strong>Data Persistence</strong></td>
+      <td>Browser localStorage</td>
+      <td>PostgreSQL/MongoDB with encryption-at-rest and regular backups</td>
+    </tr>
+    <tr>
+      <td><strong>Session Management</strong></td>
+      <td>sessionStorage (no expiry)</td>
+      <td>HTTP-only secure cookies with expiry, CSRF protection</td>
+    </tr>
+    <tr>
+      <td><strong>Input Sanitisation</strong></td>
+      <td>Basic <code>escapeHtml()</code> on display</td>
+      <td>Full XSS prevention + server-side validation and parameterised queries</td>
+    </tr>
+    <tr>
+      <td><strong>Transport Security</strong></td>
+      <td>Not enforced</td>
+      <td>Mandatory HTTPS (TLS/SSL) with HSTS headers</td>
+    </tr>
+    <tr>
+      <td><strong>RBAC</strong></td>
+      <td>Two roles (admin/user) hardcoded</td>
+      <td>Configurable role-based permissions with policy engine</td>
+    </tr>
+    <tr>
+      <td><strong>Audit Logging</strong></td>
+      <td>Appended to <code>context_details</code></td>
+      <td>Dedicated audit trail table with immutable, timestamped records</td>
+    </tr>
+  </tbody>
+</table>
+
+
+<!-- ===== DOCUMENT FOOTER ===== -->
+<div class="doc-footer">
+  <p><strong>MAN Commercial Protection Ltd</strong> — Beneficiary Account & Portal Documentation v2.0</p>
+  <p>Source files: <code>login.html</code> · <code>portal.js</code> · <code>portal-data.js</code> · <code>portal-nav.js</code> · <code>portal.css</code></p>
+  <p>Generated: 8 October 2026 &bull; Classification: Internal &bull; © 2026 MAN Commercial Protection</p>
+</div>
+
+
+<!-- ===== LOAD IMAGES ===== -->
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const map = {
+      'login-screenshot': 'doc-screenshot-login.jpg',
+      'dashboard-screenshot': 'doc-screenshot-dashboard.jpg',
+      'admin-screenshot': 'doc-screenshot-admin.jpg',
+      'cert-screenshot': 'doc-screenshot-certificate.jpg',
+      'create-modal-screenshot': 'doc-screenshot-create-modal.jpg'
+    };
+    for (const [id, src] of Object.entries(map)) {
+      const el = document.getElementById(id);
+      if (el) { el.src = src; el.style.display = 'block'; }
+    }
+  });
+</script>
+
+</body>
+</html>

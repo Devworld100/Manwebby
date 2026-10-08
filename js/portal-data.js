@@ -1,0 +1,437 @@
+/* ==========================================================================
+   MAN Commercial Protection - Portal Data Layer
+   Production SQLite backend synchronization with client-side fallback
+   ========================================================================== */
+
+(function(window) {
+  'use strict';
+
+  const STORAGE_KEY = 'mcp_portal_profiles_db_v2';
+  const SESSION_KEY = 'mcp_portal_active_session_v2';
+
+  // Fallback initial profiles in case of offline/local file viewing
+  const SEED_PROFILES = [
+    {
+      id: 'f81d4fae-7dec-11d0-a765-00a0c91e6bf6',
+      auth_user_id: 'user_anita_johnson',
+      username: 'anita.johnson',
+      email: 'anita.johnson@vault-trustee.co.uk',
+      password: 'Password123!',
+      role: 'user',
+      owner_name: 'Engineer Steven Johnson',
+      beneficiary_name: 'Anita Johnson',
+      deposit_amount: 24500000,
+      deposit_item: 'GOLD (490Kilos)',
+      currency: 'USD',
+      profile_image_url: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=180&auto=format&fit=crop&q=80',
+      context_details: 'Certificate of Deposit Code: 316SJ17 | Security Code: 0147 | Transaction Code: 529138 | Deposit Code: 198308MZL14 | Serial No: 01479040198308. Consignment deposited on 2nd May 2019 under Safe Keeping protocol at Solihull Vault facility. Mandate clause: In the absence of the Depositor only the next of Kin or the Beneficiary (Anita Johnson & to whom it may concern) has the mandate to claim the consignment with at least two (2) days notification prior to collection. Demurrage rate: US $10.00 / day. Signatories: Iain McCallister (General Manager & CEO) & Engineer Steven Johnson (Depositor).',
+      security_code: '0147',
+      transaction_code: '529138',
+      deposit_code: '198308MZL14',
+      cert_code: '316SJ17',
+      serial_no: '01479040198308',
+      date_of_deposit: '2019-05-02',
+      status: 'Active',
+      created_at: '2019-05-02T10:00:00Z',
+      updated_at: '2024-03-15T12:00:00Z'
+    },
+    {
+      id: 'a23c4e10-8fa1-11ec-b909-0242ac120002',
+      auth_user_id: 'user_marcus_vance',
+      username: 'marcus.vance',
+      email: 'marcus.vance@vance-holdings.co.uk',
+      password: 'Password123!',
+      role: 'user',
+      owner_name: 'Lord Arthur Vance (Deceased)',
+      beneficiary_name: 'Marcus Vance',
+      deposit_amount: 4200000,
+      deposit_item: 'Sovereign Bonds & Title Deeds',
+      currency: 'GBP',
+      profile_image_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=180&auto=format&fit=crop&q=80',
+      context_details: 'Certificate of Deposit Code: 482VA21 | Security Code: 0288 | Deposit Code: 202109VNC02. Consignment contains bearer instruments and certified UK sovereign bonds deposited for custody on 14th Sept 2021. High Court Probate granted naming Marcus Vance as sole designated claimant.',
+      security_code: '0288',
+      transaction_code: '614920',
+      deposit_code: '202109VNC02',
+      cert_code: '482VA21',
+      serial_no: '02881940192881',
+      date_of_deposit: '2021-09-14',
+      status: 'Active',
+      created_at: '2021-09-14T11:30:00Z',
+      updated_at: '2024-02-10T14:20:00Z'
+    },
+    {
+      id: 'b56d8f22-9bc2-11ec-b909-0242ac120003',
+      auth_user_id: 'user_sophia_chen',
+      username: 'sophia.chen',
+      email: 'dr.sophia.chen@oxford-research.ac.uk',
+      password: 'Password123!',
+      role: 'user',
+      owner_name: 'Chen Wei-Ming (Estate)',
+      beneficiary_name: 'Dr. Sophia Chen',
+      deposit_amount: 8750000,
+      deposit_item: 'Rough & Cut Diamonds (1,250 Carats)',
+      currency: 'USD',
+      profile_image_url: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=180&auto=format&fit=crop&q=80',
+      context_details: 'Certificate of Deposit Code: 591CH22 | Security Code: 0359 | Deposit Code: 202211CHN03. GIA certified gemstone parcel locked in Solihull High-Security Safe 4B. Beneficiary mandate verified under international probate convention.',
+      security_code: '0359',
+      transaction_code: '782341',
+      deposit_code: '202211CHN03',
+      cert_code: '591CH22',
+      serial_no: '03590123849102',
+      date_of_deposit: '2022-11-20',
+      status: 'Active',
+      created_at: '2022-11-20T09:00:00Z',
+      updated_at: '2024-04-02T16:10:00Z'
+    },
+    {
+      id: 'c89e1a34-0cd3-11ed-b909-0242ac120004',
+      auth_user_id: 'user_estate_harrington',
+      username: 'estate.harrington',
+      email: 'trustee@harrington-chancery.co.uk',
+      password: 'Password123!',
+      role: 'user',
+      owner_name: 'Capt. David Harrington (Deceased)',
+      beneficiary_name: 'Estate Trustee (Pending Heir Kinship)',
+      deposit_amount: 3100000,
+      deposit_item: 'Rare Numismatic Coins & Charter Deeds',
+      currency: 'GBP',
+      profile_image_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=180&auto=format&fit=crop&q=80',
+      context_details: 'Certificate of Deposit Code: 604HR23 | Security Code: 0412 | Deposit Code: 202304HRG04. Account created with preliminary estate representation. Ready for dynamic administrator reassignment once direct heir kinship is confirmed by High Court Probate.',
+      security_code: '0412',
+      transaction_code: '839210',
+      deposit_code: '202304HRG04',
+      cert_code: '604HR23',
+      serial_no: '04120849204910',
+      date_of_deposit: '2023-04-10',
+      status: 'Pending',
+      created_at: '2023-04-10T14:45:00Z',
+      updated_at: '2024-01-20T10:00:00Z'
+    }
+  ];
+
+  const ADMIN_CREDENTIALS = {
+    id: '00000000-0000-0000-0000-000000000001',
+    auth_user_id: 'admin_root',
+    username: 'admin@mancommercial.co.uk',
+    email: 'admin@mancommercial.co.uk',
+    password: 'AdminPass2024!',
+    role: 'admin',
+    owner_name: 'MAN Commercial Protection Ltd',
+    beneficiary_name: 'Administrator Console',
+    deposit_amount: 0,
+    deposit_item: 'System Administration',
+    profile_image_url: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=180&auto=format&fit=crop&q=80',
+    context_details: 'Full administrative clearance for user profile CRUD and dynamic name reassignments.',
+    status: 'Active'
+  };
+
+  class PortalDataStore {
+    constructor() {
+      this.profiles = [];
+      this.init();
+    }
+
+    init() {
+      try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored) {
+          this.profiles = JSON.parse(stored);
+        } else {
+          this.profiles = JSON.parse(JSON.stringify(SEED_PROFILES));
+          this.save();
+        }
+      } catch (e) {
+        this.profiles = JSON.parse(JSON.stringify(SEED_PROFILES));
+      }
+
+      // Sync with server SQLite DB asynchronously
+      this.syncFromServer();
+    }
+
+    async syncFromServer() {
+      try {
+        const res = await fetch('/api/profiles');
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.success && Array.isArray(data.profiles) && data.profiles.length > 0) {
+            this.profiles = data.profiles;
+            this.save();
+            if (window.PortalUI && typeof window.PortalUI.refreshCurrentView === 'function') {
+              window.PortalUI.refreshCurrentView();
+            }
+          }
+        }
+      } catch (err) {
+        // Fallback to local cache if running without server
+      }
+    }
+
+    save() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(this.profiles));
+      } catch (e) {
+        console.warn('LocalStorage save failed', e);
+      }
+    }
+
+    // --- Authentication ---
+    async authenticate(identifier, password) {
+      if (!identifier || !password) return { success: false, message: 'Please enter username/email and password.' };
+
+      // 1. Try server SQLite DB
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: identifier, password })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.success && data.user) {
+            const userObj = data.user.profile || data.user;
+            userObj.role = data.user.role;
+            this.setSession(userObj);
+            await this.syncFromServer();
+            return { success: true, user: userObj, role: data.user.role };
+          }
+        } else if (res.status === 401) {
+          return { success: false, message: 'Invalid username/email or password.' };
+        }
+      } catch (e) {
+        // Fallback to client check
+      }
+
+      // 2. Client fallback
+      const term = identifier.trim().toLowerCase();
+
+      // Check Admin
+      if ((term === ADMIN_CREDENTIALS.username.toLowerCase() || term === ADMIN_CREDENTIALS.email.toLowerCase() || term === 'admin') &&
+          (password === ADMIN_CREDENTIALS.password || password === 'AdminPass2024!')) {
+        const user = { ...ADMIN_CREDENTIALS };
+        delete user.password;
+        this.setSession(user);
+        return { success: true, user, role: 'admin' };
+      }
+
+      // Check User profiles
+      const profile = this.profiles.find(p => 
+        (p.username.toLowerCase() === term || p.email.toLowerCase() === term) && 
+        p.password === password
+      );
+
+      if (profile) {
+        if (profile.status === 'Suspended' || profile.status === 'Inactive') {
+          return { success: false, message: 'This account has been deactivated. Please contact support.' };
+        }
+
+        const user = { ...profile };
+        delete user.password;
+        this.setSession(user);
+        return { success: true, user, role: 'user' };
+      }
+
+      return { success: false, message: 'Invalid username/email or password.' };
+    }
+
+    getSession() {
+      try {
+        const s = sessionStorage.getItem(SESSION_KEY);
+        if (s) return JSON.parse(s);
+      } catch (e) {}
+      return null;
+    }
+
+    setSession(user) {
+      try {
+        if (user) sessionStorage.setItem(SESSION_KEY, JSON.stringify(user));
+        else sessionStorage.removeItem(SESSION_KEY);
+      } catch (e) {}
+    }
+
+    logout() {
+      this.setSession(null);
+    }
+
+    // --- CRUD Operations ---
+    getProfiles(searchQuery = '', statusFilter = 'ALL') {
+      let list = [...this.profiles];
+
+      if (statusFilter && statusFilter !== 'ALL') {
+        list = list.filter(p => p.status === statusFilter);
+      }
+
+      if (searchQuery && searchQuery.trim() !== '') {
+        const q = searchQuery.toLowerCase().trim();
+        list = list.filter(p => 
+          (p.owner_name && p.owner_name.toLowerCase().includes(q)) ||
+          (p.beneficiary_name && p.beneficiary_name.toLowerCase().includes(q)) ||
+          (p.username && p.username.toLowerCase().includes(q)) ||
+          (p.email && p.email.toLowerCase().includes(q)) ||
+          (p.deposit_item && p.deposit_item.toLowerCase().includes(q)) ||
+          (p.context_details && p.context_details.toLowerCase().includes(q)) ||
+          (p.security_code && p.security_code.toLowerCase().includes(q)) ||
+          (p.cert_code && p.cert_code.toLowerCase().includes(q))
+        );
+      }
+
+      return list;
+    }
+
+    getProfileById(id) {
+      return this.profiles.find(p => p.id === id) || null;
+    }
+
+    async createProfile(data) {
+      const newProfile = {
+        id: 'p-' + Date.now() + '-' + Math.random().toString(36).substr(2, 6),
+        auth_user_id: 'user_' + data.username.toLowerCase().replace(/[^a-z0-9]/g, '_'),
+        username: data.username,
+        email: data.email,
+        password: data.password || 'SecureKey2026!',
+        role: 'user',
+        owner_name: data.owner_name,
+        beneficiary_name: data.beneficiary_name,
+        deposit_amount: parseFloat(data.deposit_amount) || 0,
+        deposit_item: data.deposit_item || 'Vault Deposit Item',
+        currency: data.currency || 'USD',
+        profile_image_url: data.profile_image_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=180&auto=format&fit=crop&q=80',
+        context_details: data.context_details || 'New physical deposit mandated under custody terms.',
+        security_code: '0' + Math.floor(100 + Math.random() * 900),
+        transaction_code: String(Math.floor(100000 + Math.random() * 900000)),
+        deposit_code: new Date().getFullYear() + '09MCP' + Math.floor(10 + Math.random() * 90),
+        cert_code: Math.floor(100 + Math.random() * 900) + 'MC' + Math.floor(10 + Math.random() * 90),
+        serial_no: '0147' + Math.floor(1000000000 + Math.random() * 9000000000),
+        date_of_deposit: new Date().toISOString().split('T')[0],
+        status: data.status || 'Active',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+
+      this.profiles.unshift(newProfile);
+      this.save();
+
+      // Persist to server SQLite
+      try {
+        fetch('/api/profiles', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(newProfile)
+        }).catch(() => {});
+      } catch (e) {}
+
+      return newProfile;
+    }
+
+    async updateProfile(id, updates) {
+      const idx = this.profiles.findIndex(p => p.id === id);
+      if (idx === -1) return null;
+
+      this.profiles[idx] = {
+        ...this.profiles[idx],
+        ...updates,
+        updated_at: new Date().toISOString()
+      };
+      this.save();
+
+      // Persist to server SQLite
+      try {
+        fetch(`/api/profiles/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updates)
+        }).catch(() => {});
+      } catch (e) {}
+
+      return this.profiles[idx];
+    }
+
+    async reassignNames(id, { new_owner_name, new_beneficiary_name, reassignment_note }) {
+      const profile = this.getProfileById(id);
+      if (!profile) return null;
+
+      const prevOwner = profile.owner_name;
+      const prevBen = profile.beneficiary_name;
+
+      profile.owner_name = new_owner_name;
+      profile.beneficiary_name = new_beneficiary_name;
+      profile.updated_at = new Date().toISOString();
+
+      const logNote = ` [Reassignment Log: Reassigned from Owner "${prevOwner}" / Beneficiary "${prevBen}" to Owner "${new_owner_name}" / Beneficiary "${new_beneficiary_name}" on ${new Date().toLocaleDateString('en-GB')}. Reason: ${reassignment_note}]`;
+      profile.context_details = (profile.context_details || '') + logNote;
+
+      this.save();
+
+      // Persist to server SQLite
+      try {
+        fetch(`/api/profiles/${id}/reassign`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            new_owner_name,
+            new_beneficiary_name,
+            reassignment_note
+          })
+        }).catch(() => {});
+      } catch (e) {}
+
+      return profile;
+    }
+
+    async deleteProfile(id) {
+      const idx = this.profiles.findIndex(p => p.id === id);
+      if (idx === -1) return false;
+
+      this.profiles.splice(idx, 1);
+      this.save();
+
+      // Persist to server SQLite
+      try {
+        fetch(`/api/profiles/${id}`, { method: 'DELETE' }).catch(() => {});
+      } catch (e) {}
+
+      return true;
+    }
+
+    async saveCollectionNotice(noticeData) {
+      const profile = this.getProfileById(noticeData.profile_id);
+      if (profile) {
+        const noticeLog = ` [2-Day Mandated Collection Notice received on ${new Date().toLocaleDateString('en-GB')}: Scheduled Collection for ${noticeData.collectionDate}, Authorized Escort: ${noticeData.courierName}].`;
+        profile.context_details = (profile.context_details || '') + noticeLog;
+        profile.updated_at = new Date().toISOString();
+        this.save();
+      }
+
+      try {
+        fetch('/api/collection-notice', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(noticeData)
+        }).catch(() => {});
+      } catch (e) {}
+
+      return true;
+    }
+
+    calculateDemurrage(profile) {
+      const depositDate = profile.date_of_deposit ? new Date(profile.date_of_deposit) : new Date('2019-05-02');
+      const now = new Date();
+      const diffTime = Math.abs(now - depositDate);
+      const diffDays = Math.max(1, Math.floor(diffTime / (1000 * 60 * 60 * 24)));
+      const dailyRate = 10.00;
+      const totalAccrued = diffDays * dailyRate;
+
+      return {
+        depositDate,
+        days: diffDays,
+        dailyRate: 10.00,
+        total: totalAccrued,
+        formattedTotal: '$' + totalAccrued.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+        depositDateFormatted: depositDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+      };
+    }
+  }
+
+  // Export singleton
+  window.PortalData = new PortalDataStore();
+
+})(window);
