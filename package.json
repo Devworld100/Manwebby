@@ -1,12 +1,26 @@
 {
   "name": "man-portal",
   "version": "1.0.0",
-  "description": "Static web portal",
+  "description": "MAN Commercial Protection - Corporate Website & Vault Custody Portal",
   "main": "serve.js",
   "scripts": {
     "dev": "node serve.js",
     "start": "node serve.js",
     "tunnel": "cloudflared tunnel --url http://localhost:3000",
     "share": "share.bat"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Devworld100/Manwebby.git"
+  },
+  "keywords": [
+    "security",
+    "portal",
+    "man-commercial-protection",
+    "vault",
+    "sqlite"
+  ],
+  "author": "MAN Commercial Protection Ltd",
+  "license": "UNLICENSED"
 }
+
