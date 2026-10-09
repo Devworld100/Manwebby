@@ -408,7 +408,7 @@
 <!-- COVER PAGE                                                              -->
 <!-- ████████████████████████████████████████████████████████████████████████ -->
 <div class="cover-page">
-  <img src="mcp-30-logo-v2.jpg" alt="MAN Commercial Protection" class="cover-logo">
+  <img src="../assets/images/mcp-30-logo-v2.jpg" alt="MAN Commercial Protection" class="cover-logo">
   <span class="cover-badge"><i class="fas fa-lock"></i> Secure Custody Portal v2</span>
   <h1 class="cover-title">Beneficiary Account &<br>Portal Documentation</h1>
   <p class="cover-subtitle">Complete technical reference for the Admin Management Portal and User Beneficiary Dashboard — login system, CRUD operations, modals, and data architecture.</p>
@@ -588,7 +588,7 @@
 <p>The login screen (<code>#view-login</code>) is displayed by default when no active session exists. It consists of two side-by-side panels.</p>
 
 <div class="screenshot-block avoid-break">
-  <img src="mcp-30-logo-v2.jpg" alt="Login Page" style="display:none;">
+  <img src="../assets/images/mcp-30-logo-v2.jpg" alt="Login Page" style="display:none;">
   <img id="login-screenshot" alt="Login Page — Sign In Form & Quick Demo Access">
   <div class="screenshot-caption"><i class="fas fa-camera"></i> Figure 1 — Login View: Sign-In Form (left) and 1-Click Demo Access panel (right)</div>
 </div>
@@ -1288,11 +1288,11 @@
 <script>
   document.addEventListener('DOMContentLoaded', () => {
     const map = {
-      'login-screenshot': 'doc-screenshot-login.jpg',
-      'dashboard-screenshot': 'doc-screenshot-dashboard.jpg',
-      'admin-screenshot': 'doc-screenshot-admin.jpg',
-      'cert-screenshot': 'doc-screenshot-certificate.jpg',
-      'create-modal-screenshot': 'doc-screenshot-create-modal.jpg'
+      'login-screenshot': 'screenshots/doc-screenshot-login.jpg',
+      'dashboard-screenshot': 'screenshots/doc-screenshot-dashboard.jpg',
+      'admin-screenshot': 'screenshots/doc-screenshot-admin.jpg',
+      'cert-screenshot': 'screenshots/doc-screenshot-certificate.jpg',
+      'create-modal-screenshot': 'screenshots/doc-screenshot-create-modal.jpg'
     };
     for (const [id, src] of Object.entries(map)) {
       const el = document.getElementById(id);

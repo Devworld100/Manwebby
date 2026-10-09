@@ -219,7 +219,23 @@ const server = http.createServer(async (req, res) => {
 
   // Prevent directory traversal
   const safePath = path.normalize(pathname).replace(/^(\.\.[\/\\])+/, '');
-  const filePath = path.join(ROOT, safePath);
+  let filePath = path.join(ROOT, safePath);
+
+  // Fallback lookup in organized folders if not found in root directly
+  if (!fs.existsSync(filePath) || !fs.statSync(filePath, { throwIfNoEntry: false })?.isFile()) {
+    const candidatePaths = [
+      path.join(ROOT, 'assets', 'images', safePath),
+      path.join(ROOT, 'assets', 'videos', safePath),
+      path.join(ROOT, 'docs', safePath),
+      path.join(ROOT, 'docs', 'screenshots', safePath)
+    ];
+    for (const cand of candidatePaths) {
+      if (fs.existsSync(cand) && fs.statSync(cand, { throwIfNoEntry: false })?.isFile()) {
+        filePath = cand;
+        break;
+      }
+    }
+  }
 
   fs.stat(filePath, (err, stats) => {
     if (err || !stats.isFile()) {

@@ -8,7 +8,7 @@ Official web presence and authenticated vault custody portal for **MAN Commercia
 
 - **Public Corporate Website**:
   - Full company presentation: Services, Sectors, Clients, Careers, News, and Training Academy.
-  - Video-enabled responsive header carousel featuring `mcp-services-clip-.mp4` and `mcp-training-2.mp4` with automatic transitions.
+  - Video-enabled responsive header carousel featuring `assets/videos/mcp-services-clip-.mp4` and `assets/videos/mcp-training-2.mp4` with automatic transitions.
   - Dynamic interactive megamenus, accreditation badges, and case study highlights.
 
 - **Vault Custody & Beneficiary Portal (`login.html`)**:
@@ -21,6 +21,29 @@ Official web presence and authenticated vault custody portal for **MAN Commercia
   - **Zero-Dependency SQLite**: Powered by Node.js built-in `node:sqlite` in WAL mode (`data/portal.db`).
   - **REST API Endpoints**: Authentication (`/api/auth/login`), profile CRUD (`/api/profiles`), dynamic reassignments (`/api/profiles/:id/reassign`), and collection notices (`/api/collection-notice`).
   - **Streaming Support**: Built-in HTTP 206 byte-range audio/video streaming for `.mp4` media.
+
+---
+
+## Project Structure
+
+```
+man-portal/
+├── assets/                  # Static media assets
+│   ├── images/              # Logos, accreditations, badges
+│   └── videos/              # Video carousel clips
+├── docs/                    # Technical & portal documentation
+│   ├── MAN-Portal-Documentation.html
+│   └── screenshots/         # System screenshots for documentation
+├── css/                     # Stylesheets (corporate site & portal)
+├── js/                      # Frontend JavaScript modules
+├── data/                    # SQLite database storage (WAL mode)
+├── *.html                   # Corporate web pages & vault portal
+├── serve.js                 # Embedded HTTP/REST API web server
+├── db.js                    # Database operations & seeding
+├── push.bat                 # One-click GitHub sync launcher
+├── share.bat                # One-click Cloudflare tunnel live share
+└── package.json             # NPM package configuration
+```
 
 ---
 
