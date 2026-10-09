@@ -114,6 +114,8 @@
       document.getElementById('view-admin-portal').style.display = 'block';
       renderAdminDashboard();
     } else {
+      const backBtn = document.getElementById('btn-back-to-admin');
+      if (backBtn) backBtn.style.display = 'none';
       document.getElementById('view-admin-portal').style.display = 'none';
       document.getElementById('view-user-dashboard').style.display = 'block';
       renderUserDashboard(user.id);
@@ -232,7 +234,10 @@
           <span style="font-size:0.75rem; font-weight:700; padding:0.2rem 0.55rem; border-radius:4px; text-transform:uppercase; background:${p.status === 'Active' ? '#ecfdf5; color:#065f46;' : '#fffbeb; color:#92400e;'}">${p.status}</span>
         </td>
         <td>
-          <div style="display:flex; gap:0.35rem; justify-content:flex-end;">
+          <div style="display:flex; gap:0.35rem; justify-content:flex-end; align-items:center;">
+            <button class="btn btn--sm btn--primary" onclick="window.PortalUI.previewDashboard('${p.id}')" title="Preview Beneficiary Dashboard View" style="padding:0.25rem 0.55rem; font-size:0.75rem; background:var(--portal-red); border-color:var(--portal-red);">
+              <i class="fas fa-eye"></i> View
+            </button>
             <button class="btn btn--sm btn--outline" onclick="window.PortalUI.openCertModal('${p.id}')" title="View Official Certificate" style="color:var(--portal-gold); border-color:var(--portal-gold);">
               <i class="fas fa-certificate"></i> Cert
             </button>
@@ -249,6 +254,33 @@
         </td>
       </tr>
     `).join('');
+  }
+
+  // --- Preview Beneficiary Dashboard for Admin ---
+  function previewDashboard(profileId) {
+    document.getElementById('view-admin-portal').style.display = 'none';
+    document.getElementById('view-user-dashboard').style.display = 'block';
+    renderUserDashboard(profileId);
+
+    // Show Back to Admin button in user dashboard header
+    let backBtn = document.getElementById('btn-back-to-admin');
+    if (!backBtn) {
+      const headerBtns = document.querySelector('#view-user-dashboard .user-dashboard-header div[style*="flex"]');
+      if (headerBtns) {
+        backBtn = document.createElement('button');
+        backBtn.id = 'btn-back-to-admin';
+        backBtn.className = 'btn btn--outline';
+        backBtn.style.cssText = 'color:#ffffff; border-color:#38bdf8; background:rgba(56, 189, 248, 0.25); font-weight:800;';
+        backBtn.innerHTML = '<i class="fas fa-arrow-left"></i> Back to Admin';
+        backBtn.onclick = () => {
+          document.getElementById('view-user-dashboard').style.display = 'none';
+          document.getElementById('view-admin-portal').style.display = 'block';
+          renderAdminDashboard();
+        };
+        headerBtns.prepend(backBtn);
+      }
+    }
+    if (backBtn) backBtn.style.display = 'inline-flex';
   }
 
   // --- Official Certificate of Deposit Modal Handler ---
@@ -472,6 +504,7 @@
   }
 
   window.PortalUI = {
+    previewDashboard,
     openCreateModal,
     openEditModal,
     openReassignModal,
