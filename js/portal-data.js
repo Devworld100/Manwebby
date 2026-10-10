@@ -6,7 +6,7 @@
 (function(window) {
   'use strict';
 
-  const STORAGE_KEY = 'mcp_portal_profiles_db_v2';
+  const STORAGE_KEY = 'mcp_portal_profiles_db_v3';
   const SESSION_KEY = 'mcp_portal_active_session_v2';
 
   class PortalDataStore {
@@ -16,6 +16,12 @@
     }
 
     init() {
+      // Purge legacy demo storage keys so no fake demo data persists
+      try {
+        localStorage.removeItem('mcp_portal_profiles_db');
+        localStorage.removeItem('mcp_portal_profiles_db_v2');
+      } catch (e) {}
+
       try {
         const stored = localStorage.getItem(STORAGE_KEY);
         if (stored) {
@@ -28,7 +34,7 @@
         this.profiles = [];
       }
 
-      // Sync with server SQLite DB asynchronously
+      // Sync with server DB asynchronously
       this.syncFromServer();
     }
 
@@ -37,11 +43,9 @@
         const res = await fetch('/api/profiles');
         if (res.ok) {
           const data = await res.json();
-          if (data && data.success && Array.isArray(data.profiles) && data.profiles.length > 0) {
-            // Keep local profiles that haven't synced yet, then merge server profiles
-            const serverIds = new Set(data.profiles.map(p => p.id));
-            const localOnly = this.profiles.filter(p => !serverIds.has(p.id));
-            this.profiles = [...data.profiles, ...localOnly];
+          if (data && data.success && Array.isArray(data.profiles)) {
+            // Live server database is the authoritative source of truth
+            this.profiles = data.profiles;
             this.save();
             if (window.PortalUI && typeof window.PortalUI.refreshCurrentView === 'function') {
               window.PortalUI.refreshCurrentView();
@@ -49,7 +53,7 @@
           }
         }
       } catch (err) {
-        // Fallback to local cache if running without server
+        // Fallback to local cache if offline
       }
     }
 
@@ -154,6 +158,34 @@
       }
 
       return list;
+    }
+
+    getStats() {
+      const total = this.profiles.length;
+      const active = this.profiles.filter(p => p.status === 'Active' || p.status === 'Release Processing').length;
+      const pending = this.profiles.filter(p => p.status === 'Pending').length;
+
+      let totalVal = 0;
+      this.profiles.forEach(p => {
+        const amt = Number(p.deposit_amount) || 0;
+        const mult = p.currency === 'GBP' ? 1.30 : (p.currency === 'EUR' ? 1.08 : 1.0);
+        totalVal += amt * mult;
+      });
+
+      let formattedVal = '$0.00';
+      if (totalVal >= 1e6) {
+        formattedVal = '$' + (totalVal / 1e6).toFixed(1) + 'M';
+      } else if (totalVal > 0) {
+        formattedVal = '$' + totalVal.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+      }
+
+      return {
+        total,
+        active,
+        pending,
+        totalAssetValue: totalVal,
+        formattedTotalAssetValue: formattedVal
+      };
     }
 
     getProfileById(id) {

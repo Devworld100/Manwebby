@@ -700,6 +700,15 @@
     return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
 
+  function refreshCurrentView() {
+    if (!currentUser) return;
+    if (currentUser.role === 'admin') {
+      renderAdminDashboard();
+    } else {
+      renderUserDashboard(currentUser.id);
+    }
+  }
+
   window.PortalUI = {
     previewDashboard,
     openCreateModal,
@@ -707,7 +716,8 @@
     openReassignModal,
     openCertModal,
     openCollectionNoticeModal,
-    deleteProfile
+    deleteProfile,
+    refreshCurrentView
   };
 
 })(window, document);
