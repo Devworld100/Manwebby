@@ -8,6 +8,7 @@ const db = require('./db.js');
 const PORT = process.env.PORT || 3000;
 const ROOT = __dirname;
 const resolvedPathCache = new Map();
+const staticGzipCache = new Map();
 
 const MIME_TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -297,15 +298,24 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
-    // 2. Support partial content for video/audio streaming (e.g. mp4)
+    // 2. Video & Audio streaming with full Range & Accept-Ranges support
     if (ext === '.mp4' || ext === '.webm') {
-      const range = req.headers.range;
       const fileSize = stats.size;
+      const range = req.headers.range;
 
       if (range) {
         const parts = range.replace(/bytes=/, '').split('-');
         const start = parseInt(parts[0], 10);
-        const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+        let end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+
+        if (isNaN(start) || start >= fileSize || end >= fileSize || start > end) {
+          res.writeHead(416, {
+            'Content-Range': `bytes */${fileSize}`,
+            'Accept-Ranges': 'bytes'
+          });
+          return res.end();
+        }
+
         const chunkSize = (end - start) + 1;
         const fileStream = fs.createReadStream(filePath, { start, end });
 
@@ -314,14 +324,34 @@ const server = http.createServer(async (req, res) => {
           'Accept-Ranges': 'bytes',
           'Content-Length': chunkSize,
           'Content-Type': contentType,
-          'Cache-Control': 'public, max-age=604800'
+          'Cache-Control': 'public, max-age=2592000'
+        });
+
+        fileStream.on('error', () => {
+          if (!res.headersSent) res.writeHead(500);
+          res.end();
+        });
+        fileStream.pipe(res);
+        return;
+      } else {
+        // Complete video without range request - MUST provide Accept-Ranges for HTML5 media players
+        res.writeHead(200, {
+          'Accept-Ranges': 'bytes',
+          'Content-Length': fileSize,
+          'Content-Type': contentType,
+          'Cache-Control': 'public, max-age=2592000'
+        });
+        const fileStream = fs.createReadStream(filePath);
+        fileStream.on('error', () => {
+          if (!res.headersSent) res.writeHead(500);
+          res.end();
         });
         fileStream.pipe(res);
         return;
       }
     }
 
-    // 3. Gzip compression for text, html, css, js, json, svg
+    // 3. In-memory Gzip compression cache for HTML, CSS, JS, JSON, SVG
     const isCompressible = /^(text\/|application\/javascript|application\/json|image\/svg\+xml)/.test(contentType);
     const acceptEncoding = req.headers['accept-encoding'] || '';
     const canGzip = isCompressible && acceptEncoding.includes('gzip') && stats.size > 256;
@@ -331,21 +361,34 @@ const server = http.createServer(async (req, res) => {
       : 'public, max-age=0, must-revalidate';
 
     if (canGzip) {
-      res.writeHead(200, {
-        'Content-Type': contentType,
-        'Content-Encoding': 'gzip',
-        'ETag': etag,
-        'Access-Control-Allow-Origin': '*',
-        'Cache-Control': cacheHeader,
-        'Vary': 'Accept-Encoding'
-      });
-      const rawStream = fs.createReadStream(filePath);
-      const gzipStream = zlib.createGzip({ level: 6 });
-      rawStream.pipe(gzipStream).pipe(res);
-      return;
+      let cached = staticGzipCache.get(filePath);
+      if (!cached || cached.mtime !== stats.mtimeMs) {
+        try {
+          const rawBuf = fs.readFileSync(filePath);
+          const gzBuf = zlib.gzipSync(rawBuf, { level: 6 });
+          cached = { mtime: stats.mtimeMs, buf: gzBuf };
+          staticGzipCache.set(filePath, cached);
+        } catch (e) {
+          cached = null;
+        }
+      }
+
+      if (cached) {
+        res.writeHead(200, {
+          'Content-Type': contentType,
+          'Content-Encoding': 'gzip',
+          'Content-Length': cached.buf.length,
+          'ETag': etag,
+          'Access-Control-Allow-Origin': '*',
+          'Cache-Control': cacheHeader,
+          'Vary': 'Accept-Encoding'
+        });
+        res.end(cached.buf);
+        return;
+      }
     }
 
-    // Uncompressed fallback
+    // Uncompressed fallback with explicit Content-Length
     res.writeHead(200, {
       'Content-Length': stats.size,
       'Content-Type': contentType,
@@ -353,9 +396,25 @@ const server = http.createServer(async (req, res) => {
       'Access-Control-Allow-Origin': '*',
       'Cache-Control': cacheHeader
     });
-    fs.createReadStream(filePath).pipe(res);
+    const fallbackStream = fs.createReadStream(filePath);
+    fallbackStream.on('error', () => res.end());
+    fallbackStream.pipe(res);
   });
 });
+
+// Render Keep-Alive: Ping service every 10 minutes to prevent free-tier spin down
+const PING_INTERVAL_MS = 10 * 60 * 1000;
+const KEEP_ALIVE_URL = process.env.PUBLIC_APP_URL || process.env.RENDER_EXTERNAL_URL || 'https://mancommercialsprotection.co.uk';
+
+setInterval(() => {
+  try {
+    const healthUrl = `${KEEP_ALIVE_URL}/api/health`;
+    const protocol = healthUrl.startsWith('https') ? require('https') : require('http');
+    protocol.get(healthUrl, (pingRes) => {
+      pingRes.resume();
+    }).on('error', () => {});
+  } catch (err) {}
+}, PING_INTERVAL_MS);
 
 server.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}/ (SQLite DB attached)`);

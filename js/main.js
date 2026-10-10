@@ -92,13 +92,24 @@ function initHeroSlider() {
     const activeVideo = slides[currentSlide].querySelector('video');
     if (activeVideo) {
       activeVideo.muted = true;
-      if (activeVideo.readyState === 0) {
-        activeVideo.load();
-      }
-      activeVideo.currentTime = 0;
+      activeVideo.playsInline = true;
+      try {
+        if (activeVideo.currentTime > 0 && !activeVideo.seeking) {
+          activeVideo.currentTime = 0;
+        }
+      } catch (err) {}
       const playPromise = activeVideo.play();
       if (playPromise !== undefined) {
-        playPromise.catch(() => {});
+        playPromise.catch(() => {
+          // Retry on first user interaction if browser autoplay blocked
+          const unlock = () => {
+            activeVideo.play().catch(() => {});
+            window.removeEventListener('click', unlock);
+            window.removeEventListener('touchstart', unlock);
+          };
+          window.addEventListener('click', unlock, { once: true });
+          window.addEventListener('touchstart', unlock, { once: true });
+        });
       }
     }
 
