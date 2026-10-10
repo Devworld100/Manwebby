@@ -416,6 +416,7 @@ setInterval(() => {
   } catch (err) {}
 }, PING_INTERVAL_MS);
 
-server.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}/ (SQLite DB attached)`);
+server.listen(PORT, async () => {
+  console.log(`Server running at http://localhost:${PORT}/ (${db.getEngineName()})`);
+  await db.ensureAdminUser();
 });

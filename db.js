@@ -112,10 +112,61 @@ module.exports = {
     return supabase ? 'Supabase (PostgreSQL Cloud)' : 'SQLite (node:sqlite WAL)';
   },
 
+  async ensureAdminUser() {
+    const adminUser = {
+      id: 'admin_master_01',
+      username: (process.env.ADMIN_USERNAME || 'admin').trim(),
+      email: (process.env.ADMIN_EMAIL || 'contact@mancommercialsprotection.co.uk').trim(),
+      password: process.env.ADMIN_PASSWORD || 'Admin2026@MAN!',
+      role: 'admin',
+      created_at: new Date().toISOString()
+    };
+
+    if (supabase) {
+      try {
+        const { error } = await supabase.from('users').upsert(adminUser, { onConflict: 'username' });
+        if (error) {
+          console.error('[Supabase ensureAdminUser Error]:', error.message);
+        } else {
+          console.log('[Supabase] Master admin user verified:', adminUser.username);
+        }
+      } catch (err) {
+        console.error('[Supabase ensureAdminUser Exception]:', err.message);
+      }
+    }
+
+    try {
+      sqliteDb.prepare(`
+        INSERT OR REPLACE INTO users (id, username, email, password, role, created_at)
+        VALUES (?, ?, ?, ?, 'admin', ?);
+      `).run(adminUser.id, adminUser.username, adminUser.email, adminUser.password, adminUser.created_at);
+      console.log('[SQLite] Master admin user verified:', adminUser.username);
+    } catch (err) {
+      console.error('[SQLite ensureAdminUser Error]:', err.message);
+    }
+
+    return adminUser;
+  },
+
   async authenticateUser(usernameOrEmail, password) {
     const clean = (usernameOrEmail || '').trim().toLowerCase();
+    const adminUser = (process.env.ADMIN_USERNAME || 'admin').trim();
+    const adminEmail = (process.env.ADMIN_EMAIL || 'contact@mancommercialsprotection.co.uk').trim();
+    const adminPass = process.env.ADMIN_PASSWORD || 'Admin2026@MAN!';
 
-    // 1. Supabase Mode
+    // 1. Direct Master Admin Authentication
+    const isAdminCandidate = (clean === adminUser.toLowerCase() || clean === adminEmail.toLowerCase());
+    if (isAdminCandidate && password === adminPass) {
+      await this.ensureAdminUser();
+      return {
+        id: 'admin_master_01',
+        username: adminUser,
+        email: adminEmail,
+        role: 'admin'
+      };
+    }
+
+    // 2. Supabase Mode
     if (supabase) {
       const { data: users, error } = await supabase
         .from('users')
@@ -138,7 +189,7 @@ module.exports = {
       return user;
     }
 
-    // 2. SQLite Fallback
+    // 3. SQLite Fallback
     const stmt = sqliteDb.prepare(`
       SELECT * FROM users
       WHERE (LOWER(username) = ? OR LOWER(email) = ?) AND password = ?;
