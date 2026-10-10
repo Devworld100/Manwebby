@@ -2,10 +2,12 @@ require('dotenv').config();
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const zlib = require('zlib');
 const db = require('./db.js');
 
 const PORT = process.env.PORT || 3000;
 const ROOT = __dirname;
+const resolvedPathCache = new Map();
 
 const MIME_TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -248,21 +250,26 @@ const server = http.createServer(async (req, res) => {
 
   // Prevent directory traversal
   const safePath = path.normalize(pathname).replace(/^(\.\.[\/\\])+/, '');
-  let filePath = path.join(ROOT, safePath);
+  let filePath = resolvedPathCache.get(safePath);
 
-  // Fallback lookup in organized folders if not found in root directly
-  if (!fs.existsSync(filePath) || !fs.statSync(filePath, { throwIfNoEntry: false })?.isFile()) {
-    const candidatePaths = [
-      path.join(ROOT, 'assets', 'images', safePath),
-      path.join(ROOT, 'assets', 'videos', safePath),
-      path.join(ROOT, 'docs', safePath),
-      path.join(ROOT, 'docs', 'screenshots', safePath)
-    ];
-    for (const cand of candidatePaths) {
-      if (fs.existsSync(cand) && fs.statSync(cand, { throwIfNoEntry: false })?.isFile()) {
-        filePath = cand;
-        break;
+  if (!filePath) {
+    filePath = path.join(ROOT, safePath);
+    if (!fs.existsSync(filePath) || !fs.statSync(filePath, { throwIfNoEntry: false })?.isFile()) {
+      const candidatePaths = [
+        path.join(ROOT, 'assets', 'images', safePath),
+        path.join(ROOT, 'assets', 'videos', safePath),
+        path.join(ROOT, 'docs', safePath),
+        path.join(ROOT, 'docs', 'screenshots', safePath)
+      ];
+      for (const cand of candidatePaths) {
+        if (fs.existsSync(cand) && fs.statSync(cand, { throwIfNoEntry: false })?.isFile()) {
+          filePath = cand;
+          break;
+        }
       }
+    }
+    if (fs.existsSync(filePath) && fs.statSync(filePath, { throwIfNoEntry: false })?.isFile()) {
+      resolvedPathCache.set(safePath, filePath);
     }
   }
 
@@ -275,9 +282,23 @@ const server = http.createServer(async (req, res) => {
 
     const ext = path.extname(filePath).toLowerCase();
     const contentType = MIME_TYPES[ext] || 'application/octet-stream';
+    const isHtml = ext === '.html';
+    const isStaticAsset = !isHtml && ext !== '.json';
 
-    // Support partial content for video/audio streaming (e.g. mp4)
-    if (ext === '.mp4') {
+    // 1. ETag & 304 Not Modified validation (Instant responses)
+    const etag = `W/"${stats.size}-${Math.floor(stats.mtimeMs)}"`;
+    if (req.headers['if-none-match'] === etag) {
+      res.writeHead(304, {
+        'ETag': etag,
+        'Access-Control-Allow-Origin': '*',
+        'Cache-Control': isStaticAsset ? 'public, max-age=604800, stale-while-revalidate=86400' : 'public, max-age=0, must-revalidate'
+      });
+      res.end();
+      return;
+    }
+
+    // 2. Support partial content for video/audio streaming (e.g. mp4)
+    if (ext === '.mp4' || ext === '.webm') {
       const range = req.headers.range;
       const fileSize = stats.size;
 
@@ -292,18 +313,45 @@ const server = http.createServer(async (req, res) => {
           'Content-Range': `bytes ${start}-${end}/${fileSize}`,
           'Accept-Ranges': 'bytes',
           'Content-Length': chunkSize,
-          'Content-Type': contentType
+          'Content-Type': contentType,
+          'Cache-Control': 'public, max-age=604800'
         });
         fileStream.pipe(res);
         return;
       }
     }
 
+    // 3. Gzip compression for text, html, css, js, json, svg
+    const isCompressible = /^(text\/|application\/javascript|application\/json|image\/svg\+xml)/.test(contentType);
+    const acceptEncoding = req.headers['accept-encoding'] || '';
+    const canGzip = isCompressible && acceptEncoding.includes('gzip') && stats.size > 256;
+
+    const cacheHeader = isStaticAsset 
+      ? 'public, max-age=604800, stale-while-revalidate=86400' 
+      : 'public, max-age=0, must-revalidate';
+
+    if (canGzip) {
+      res.writeHead(200, {
+        'Content-Type': contentType,
+        'Content-Encoding': 'gzip',
+        'ETag': etag,
+        'Access-Control-Allow-Origin': '*',
+        'Cache-Control': cacheHeader,
+        'Vary': 'Accept-Encoding'
+      });
+      const rawStream = fs.createReadStream(filePath);
+      const gzipStream = zlib.createGzip({ level: 6 });
+      rawStream.pipe(gzipStream).pipe(res);
+      return;
+    }
+
+    // Uncompressed fallback
     res.writeHead(200, {
       'Content-Length': stats.size,
       'Content-Type': contentType,
+      'ETag': etag,
       'Access-Control-Allow-Origin': '*',
-      'Cache-Control': 'no-cache, no-store, must-revalidate'
+      'Cache-Control': cacheHeader
     });
     fs.createReadStream(filePath).pipe(res);
   });

@@ -36,22 +36,28 @@ function initMobileNav() {
   });
 }
 
-/* --- Dropdown on Mobile (click toggle) --- */
+/* --- Dropdown on Mobile (click toggle on caret, allow direct link clicks) --- */
 function initDropdownMobile() {
   const items = document.querySelectorAll('.nav__item');
 
   items.forEach(item => {
     const link = item.querySelector('.nav__link');
-    const dropdown = item.querySelector('.dropdown');
+    const caret = item.querySelector('.caret');
+    const dropdown = item.querySelector('.dropdown') || item.querySelector('.mega-menu');
 
     if (!dropdown || !link) return;
 
-    link.addEventListener('click', (e) => {
-      if (window.innerWidth <= 1024) {
-        e.preventDefault();
-        item.classList.toggle('dropdown-open');
-      }
-    });
+    if (caret) {
+      caret.style.cursor = 'pointer';
+      caret.style.padding = '6px 8px';
+      caret.addEventListener('click', (e) => {
+        if (window.innerWidth <= 1024) {
+          e.preventDefault();
+          e.stopPropagation();
+          item.classList.toggle('dropdown-open');
+        }
+      });
+    }
   });
 }
 
@@ -67,7 +73,7 @@ function initHeroSlider() {
 
   if (slides.length <= 1) return;
 
-  const SLIDE_INTERVAL = 2000; // Fast 2.0s slide transition interval
+  const SLIDE_INTERVAL = 4500; // Optimal 4.5s slide interval
   let currentSlide = 0;
   let autoPlayInterval;
 
@@ -86,6 +92,9 @@ function initHeroSlider() {
     const activeVideo = slides[currentSlide].querySelector('video');
     if (activeVideo) {
       activeVideo.muted = true;
+      if (activeVideo.readyState === 0) {
+        activeVideo.load();
+      }
       activeVideo.currentTime = 0;
       const playPromise = activeVideo.play();
       if (playPromise !== undefined) {
