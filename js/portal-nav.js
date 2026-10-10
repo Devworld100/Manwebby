@@ -20,7 +20,7 @@
     const user = getActiveSession();
 
     // 1. TopNav Link Update (e.g. "Login" -> "Dashboard / Admin Console")
-    const navLinks = document.querySelectorAll('.nav__link[href="login.html"]');
+    const navLinks = document.querySelectorAll('.nav__link[href*="login"]');
     navLinks.forEach(link => {
       if (user) {
         if (user.role === 'admin') {

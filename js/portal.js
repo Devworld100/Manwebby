@@ -404,17 +404,40 @@
     if (certCodeEl) certCodeEl.textContent = profile.cert_code || '316SJ17';
     if (depCodeEl) depCodeEl.textContent = profile.deposit_code || '198308MZL14';
     if (serialEl) serialEl.textContent = profile.serial_no || '01479040198308';
-    if (itemsEl) itemsEl.textContent = profile.deposit_item || 'GOLD (490Kilos)';
-    if (dateEl) dateEl.textContent = profile.date_of_deposit ? '2nd May, 2019' : '2nd May, 2019';
+    if (itemsEl) itemsEl.textContent = profile.deposit_item || 'Vault Custody Consignment';
+    if (dateEl) {
+      if (profile.date_of_deposit) {
+        try {
+          const d = new Date(profile.date_of_deposit);
+          const day = d.getDate();
+          const ord = (day === 1 || day === 21 || day === 31) ? 'st' : (day === 2 || day === 22) ? 'nd' : (day === 3 || day === 23) ? 'rd' : 'th';
+          const month = d.toLocaleString('en-GB', { month: 'long' });
+          const year = d.getFullYear();
+          dateEl.textContent = `${day}${ord} ${month}, ${year}`;
+        } catch (e) {
+          dateEl.textContent = profile.date_of_deposit;
+        }
+      } else {
+        dateEl.textContent = '2nd May, 2019';
+      }
+    }
     if (purposeEl) purposeEl.textContent = 'SAFE KEEPING';
-    if (depEl) depEl.textContent = (profile.owner_name || 'ENGINEER STEVEN JOHNSON').toUpperCase();
-    if (benEl) benEl.innerHTML = (profile.beneficiary_name || 'ANITA JOHNSON').toUpperCase() + '<br><small>(MALE GENDER / HEIR MANDATE)</small>';
-    if (sigDepEl) sigDepEl.textContent = (profile.owner_name || 'ENGINEER STEVEN JOHNSON').toUpperCase();
+    const ownerName = (profile.owner_name || 'Authorized Depositor').trim();
+    const benName = (profile.beneficiary_name || 'Designated Beneficiary').trim();
+    if (depEl) depEl.textContent = ownerName.toUpperCase();
+    if (benEl) benEl.innerHTML = benName.toUpperCase() + '<br><small>(VERIFIED HEIR / BENEFICIARY MANDATE)</small>';
+    if (sigDepEl) sigDepEl.textContent = ownerName.toUpperCase();
     const scriptSigDepEl = document.getElementById('cert-render-sig-script-depositor');
     if (scriptSigDepEl) {
-      const rawName = profile.owner_name || 'Steven Johnson';
-      const cleanName = rawName.replace(/^(engineer|lord|capt\.?|dr\.?|mr\.?|mrs\.?|ms\.?)\s+/i, '');
+      const cleanName = ownerName.replace(/^(engineer|lord|capt\.?|captain|dr\.?|mr\.?|mrs\.?|ms\.?|prof\.?)\s+/i, '');
       scriptSigDepEl.textContent = cleanName;
+      if (cleanName.length > 24) {
+        scriptSigDepEl.style.fontSize = '1.75rem';
+      } else if (cleanName.length > 18) {
+        scriptSigDepEl.style.fontSize = '2.05rem';
+      } else {
+        scriptSigDepEl.style.fontSize = '2.35rem';
+      }
     }
 
     openModal('modal-cert-preview');

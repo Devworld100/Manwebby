@@ -224,7 +224,7 @@
   const sectorLinks = [
     ['corporate-concierge', 'Corporate'], ['retail', 'Retail'], ['manufacturing', 'Manufacturing'], ['public-sector', 'Public Sector'], ['logistics-distribution', 'Logistics']
   ];
-  const detailLink = (id, label) => `<a href="details.html?page=${id}">${label}</a>`;
+  const detailLink = (id, label) => `<a href="/details?page=${id}">${label}</a>`;
   const navList = serviceLinks.map(([id, label]) => detailLink(id, label)).join('');
   const footerServices = serviceLinks.map(([id, label]) => detailLink(id, label)).join('');
   const footerSectors = sectorLinks.map(([id, label]) => detailLink(id, label)).join('');
@@ -239,8 +239,8 @@
           <h1>${page.title}</h1>
           <p>${page.lead}</p>
           <div class="detail-breadcrumb">
-            <a href="index.html">Home</a> &nbsp;/&nbsp; 
-            <a href="${page.group === 'Services' ? 'services.html' : page.group === 'Sectors' ? 'sectors.html' : page.group === 'Training' ? 'training.html' : page.group === 'Clients' ? 'clients.html' : page.group === 'About MAN' ? 'about.html' : 'news.html'}">${page.group}</a> &nbsp;/&nbsp; ${page.title}
+            <a href="/home">Home</a> &nbsp;/&nbsp; 
+            <a href="${page.group === 'Services' ? '/services' : page.group === 'Sectors' ? '/sectors' : page.group === 'Training' ? '/training' : page.group === 'Clients' ? '/clients' : page.group === 'About MAN' ? '/about' : '/news'}">${page.group}</a> &nbsp;/&nbsp; ${page.title}
           </div>
         </div>
       </section>
@@ -277,12 +277,15 @@
             <ol class="detail-process__list">${page.process.map(step => `<li><strong>${step[0]}</strong>${step[1]}</li>`).join('')}</ol>
           </div>
         </section>
-        ${related.length ? `<section class="detail-grid-section"><div class="container"><div class="detail-section-heading"><div class="detail-eyebrow">Explore more</div><h2>Related ${page.group.toLowerCase()} pages.</h2></div><div class="detail-cards">${related.map(([id, item], i) => `<a class="detail-card" href="details.html?page=${id}"><div class="detail-card__number">0${i + 1}</div><h3>${item.title}</h3><p>${item.lead}</p></a>`).join('')}</div></div></section>` : ''}
+        ${related.length ? `<section class="detail-grid-section"><div class="container"><div class="detail-section-heading"><div class="detail-eyebrow">Explore more</div><h2>Related ${page.group.toLowerCase()} pages.</h2></div><div class="detail-cards">${related.map(([id, item], i) => `<a class="detail-card" href="/details?page=${id}"><div class="detail-card__number">0${i + 1}</div><h3>${item.title}</h3><p>${item.lead}</p></a>`).join('')}</div></div></section>` : ''}
         <section class="detail-cta">
           <div class="container">
             <h2>Talk to our team about ${page.title.toLowerCase()}.</h2>
-            <p>Tell us about your site or requirements and we’ll help you identify the right next step.</p>
-            <a class="detail-button" href="contact.html"><i class="fas fa-file-signature"></i> Request a quote</a>
+            <p>Tell us about your site or custody requirements and we’ll help you take the next step.</p>
+            <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
+              <a class="detail-button" href="/contact"><i class="fas fa-file-signature"></i> Request a quote</a>
+              <a class="detail-button" href="/login" style="background:#c8a951; color:#0f1923; border:none; font-weight:800;"><i class="fas fa-shield-alt"></i> Custody Portal &amp; Account Access</a>
+            </div>
           </div>
         </section>
       </main>`;
@@ -290,17 +293,18 @@
 
   // Highlight active link in the navigation
   const navGroupMap = {
-    'About MAN': 'about.html',
-    'Services': 'services.html',
-    'Sectors': 'sectors.html',
-    'Clients': 'clients.html',
-    'Training': 'training.html',
-    'News & Insights': 'news.html'
+    'About MAN': '/about',
+    'Services': '/services',
+    'Sectors': '/sectors',
+    'Clients': '/clients',
+    'Training': '/training',
+    'News & Insights': '/news'
   };
   const targetHref = navGroupMap[page.group];
   if (targetHref) {
     document.querySelectorAll('.nav__link').forEach(link => {
-      if (link.getAttribute('href') === targetHref) {
+      const href = link.getAttribute('href');
+      if (href === targetHref || href === targetHref + '.html') {
         link.classList.add('nav__link--active');
       } else {
         link.classList.remove('nav__link--active');

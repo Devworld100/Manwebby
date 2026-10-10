@@ -217,8 +217,33 @@ const server = http.createServer(async (req, res) => {
     if (handled) return;
   }
 
-  if (pathname === '/') {
+  // 1. Clean URL Canonical Redirects
+  if (pathname === '/index.html') {
+    res.writeHead(301, { 'Location': '/home' + (parsedUrl.search || '') });
+    res.end();
+    return;
+  }
+
+  if (pathname.endsWith('.html')) {
+    const rawName = pathname.slice(1, -5);
+    const targetFile = path.join(ROOT, rawName + '.html');
+    if (fs.existsSync(targetFile)) {
+      const dest = rawName === 'index' ? '/home' : ('/' + rawName);
+      res.writeHead(301, { 'Location': dest + (parsedUrl.search || '') });
+      res.end();
+      return;
+    }
+  }
+
+  // 2. Map Clean URLs to physical HTML files
+  if (pathname === '/' || pathname === '/home') {
     pathname = '/index.html';
+  } else if (!path.extname(pathname)) {
+    const pageName = pathname.replace(/^\//, '');
+    const candidateHtml = path.join(ROOT, pageName + '.html');
+    if (fs.existsSync(candidateHtml)) {
+      pathname = '/' + pageName + '.html';
+    }
   }
 
   // Prevent directory traversal
