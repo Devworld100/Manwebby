@@ -21,6 +21,9 @@
     "sqlite"
   ],
   "author": "MAN Commercial Protection Ltd",
-  "license": "UNLICENSED"
+  "license": "UNLICENSED",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.117.3",
+    "dotenv": "^18.0.7"
+  }
 }
-

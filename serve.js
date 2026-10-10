@@ -1,3 +1,4 @@
+require('dotenv').config();
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
@@ -73,7 +74,7 @@ async function handleApiRequest(req, res, pathname) {
     sendJson(res, 200, {
       status: 'ok',
       engine: 'MAN Commercial Secure API',
-      database: 'SQLite (node:sqlite WAL)',
+      database: db.getEngineName(),
       timestamp: new Date().toISOString()
     });
     return true;
@@ -83,7 +84,7 @@ async function handleApiRequest(req, res, pathname) {
   if (pathname === '/api/auth/login' && req.method === 'POST') {
     try {
       const body = await readJsonBody(req);
-      const user = db.authenticateUser(body.username, body.password);
+      const user = await db.authenticateUser(body.username, body.password);
       if (!user) {
         sendJson(res, 401, { success: false, message: 'Invalid username/email or password.' });
         return true;
@@ -110,7 +111,7 @@ async function handleApiRequest(req, res, pathname) {
 
   // GET /api/profiles
   if (pathname === '/api/profiles' && req.method === 'GET') {
-    const profiles = db.getAllProfiles();
+    const profiles = await db.getAllProfiles();
     sendJson(res, 200, { success: true, profiles });
     return true;
   }
@@ -119,7 +120,7 @@ async function handleApiRequest(req, res, pathname) {
   if (pathname === '/api/profiles' && req.method === 'POST') {
     try {
       const body = await readJsonBody(req);
-      const profile = db.createProfile(body);
+      const profile = await db.createProfile(body);
       sendJson(res, 201, { success: true, profile });
       return true;
     } catch (err) {
@@ -134,7 +135,7 @@ async function handleApiRequest(req, res, pathname) {
     try {
       const profileId = reassignMatch[1];
       const body = await readJsonBody(req);
-      const updated = db.reassignProfile(profileId, body);
+      const updated = await db.reassignProfile(profileId, body);
       if (!updated) {
         sendJson(res, 404, { success: false, message: 'Profile not found' });
         return true;
@@ -153,7 +154,7 @@ async function handleApiRequest(req, res, pathname) {
     const profileId = profileMatch[1];
 
     if (req.method === 'GET') {
-      const profile = db.getProfileById(profileId);
+      const profile = await db.getProfileById(profileId);
       if (!profile) {
         sendJson(res, 404, { success: false, message: 'Profile not found' });
       } else {
@@ -165,7 +166,7 @@ async function handleApiRequest(req, res, pathname) {
     if (req.method === 'PUT') {
       try {
         const body = await readJsonBody(req);
-        const updated = db.updateProfile(profileId, body);
+        const updated = await db.updateProfile(profileId, body);
         if (!updated) {
           sendJson(res, 404, { success: false, message: 'Profile not found' });
         } else {
@@ -179,7 +180,7 @@ async function handleApiRequest(req, res, pathname) {
     }
 
     if (req.method === 'DELETE') {
-      const ok = db.deleteProfile(profileId);
+      const ok = await db.deleteProfile(profileId);
       sendJson(res, ok ? 200 : 404, { success: ok });
       return true;
     }
@@ -189,7 +190,7 @@ async function handleApiRequest(req, res, pathname) {
   if (pathname === '/api/collection-notice' && req.method === 'POST') {
     try {
       const body = await readJsonBody(req);
-      const result = db.createCollectionNotice(body);
+      const result = await db.createCollectionNotice(body);
       sendJson(res, 200, { success: true, result });
       return true;
     } catch (err) {
