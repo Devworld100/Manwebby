@@ -19,7 +19,7 @@
     <div class="container">
       <div class="topbar__left">
         <span class="topbar__alert-icon"><i class="fas fa-exclamation-triangle"></i></span>
-        <a href="tel:01217338484" class="topbar__phone">24 HR CONTACT: <span class="phone-highlight">0121 733 8484</span></a>
+        <a href="tel:+447877461980" class="topbar__phone">24 HR CONTACT: <span class="phone-highlight">+44 7877 461980</span></a>
       </div>
       <div class="topbar__right">
         <div class="topbar__social">
@@ -215,6 +215,13 @@
               <i class="fas fa-sign-in-alt"></i> Login
             </button>
           </form>
+
+          <div style="margin-top:1.5rem; padding-top:1.25rem; border-top:1px solid #e2e8f0; text-align:center;">
+            <p style="font-size:0.85rem; color:#64748b; margin-bottom:0.75rem;">Need to register a vault mandate or beneficiary account?</p>
+            <button type="button" class="btn btn--outline" style="width:100%; font-size:0.88rem; font-weight:700;" onclick="window.PortalUI.openCreateModal(true)">
+              <i class="fas fa-user-plus" style="color:var(--portal-red); margin-right:6px;"></i> Register / Create Vault Profile
+            </button>
+          </div>
         </div>
 
         <div class="login-side">
@@ -235,7 +242,7 @@
             </div>
 
             <div style="font-size:0.8rem; color:#94a3b8; line-height:1.5; margin-bottom:1rem;">
-              For credentials verification or mandate registration, contact the Solihull Operations Control Room at <strong style="color:#ffffff;">0121 733 8484</strong> or <a href="mailto:info@mancommercialprotection.co.uk" style="color:var(--portal-gold); text-decoration:none;">info@mancommercialprotection.co.uk</a>.
+              For credentials verification or mandate registration, contact the Solihull Operations Control Room at <strong style="color:#ffffff;">+44 7877 461980</strong> or <a href="mailto:info@mancommercialprotection.co.uk" style="color:var(--portal-gold); text-decoration:none;">info@mancommercialprotection.co.uk</a>.
             </div>
           </div>
 
@@ -524,9 +531,29 @@
             <input type="text" id="create-deposit-item" required placeholder="e.g. GOLD (490Kilos)">
           </div>
 
-          <div class="form-group">
-            <label for="create-avatar-url">Profile Avatar URL</label>
-            <input type="url" id="create-avatar-url" placeholder="https://images.unsplash.com/..." value="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=180&auto=format&fit=crop&q=80">
+          <div class="form-group avatar-upload-group">
+            <label style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+              <span><i class="fas fa-camera" style="color:var(--portal-gold); margin-right:5px;"></i> Profile Photo *</span>
+              <span style="font-size:0.75rem; color:#64748b; font-weight:normal;">Upload image (PNG, JPG, WEBP)</span>
+            </label>
+            <div class="avatar-upload-box">
+              <div class="avatar-preview-wrap">
+                <img id="create-avatar-preview" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=180&auto=format&fit=crop&q=80" alt="Avatar Preview" class="avatar-preview-img">
+              </div>
+              <div class="avatar-upload-actions">
+                <input type="file" id="create-avatar-file" accept="image/*" style="display:none;">
+                <input type="hidden" id="create-avatar-url" value="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=180&auto=format&fit=crop&q=80">
+                <div style="display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center;">
+                  <button type="button" class="btn btn--sm btn--primary" onclick="document.getElementById('create-avatar-file').click()">
+                    <i class="fas fa-upload"></i> Upload Image
+                  </button>
+                  <button type="button" class="btn btn--sm btn--outline" id="btn-create-clear-avatar" style="color:#ef4444; border-color:#fca5a5;">
+                    <i class="fas fa-undo"></i> Reset Default
+                  </button>
+                </div>
+                <div class="avatar-upload-hint">Click "Upload Image" to choose a file, or drag &amp; drop an image onto the box.</div>
+              </div>
+            </div>
           </div>
 
           <div class="form-group">
@@ -608,9 +635,29 @@
             <input type="text" id="edit-deposit-item" required>
           </div>
 
-          <div class="form-group">
-            <label for="edit-avatar-url">Profile Avatar URL</label>
-            <input type="url" id="edit-avatar-url">
+          <div class="form-group avatar-upload-group">
+            <label style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+              <span><i class="fas fa-camera" style="color:var(--portal-gold); margin-right:5px;"></i> Profile Photo</span>
+              <span style="font-size:0.75rem; color:#64748b; font-weight:normal;">Upload image (PNG, JPG, WEBP)</span>
+            </label>
+            <div class="avatar-upload-box">
+              <div class="avatar-preview-wrap">
+                <img id="edit-avatar-preview" src="" alt="Avatar Preview" class="avatar-preview-img">
+              </div>
+              <div class="avatar-upload-actions">
+                <input type="file" id="edit-avatar-file" accept="image/*" style="display:none;">
+                <input type="hidden" id="edit-avatar-url" value="">
+                <div style="display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center;">
+                  <button type="button" class="btn btn--sm btn--primary" onclick="document.getElementById('edit-avatar-file').click()">
+                    <i class="fas fa-upload"></i> Upload New Image
+                  </button>
+                  <button type="button" class="btn btn--sm btn--outline" id="btn-edit-clear-avatar" style="color:#ef4444; border-color:#fca5a5;">
+                    <i class="fas fa-undo"></i> Reset Default
+                  </button>
+                </div>
+                <div class="avatar-upload-hint">Upload a new photo to replace current avatar. Auto-compressed &amp; secure.</div>
+              </div>
+            </div>
           </div>
 
           <div class="form-group">
@@ -888,7 +935,7 @@
           <h4 class="footer__heading">Contact Us</h4>
           <div class="footer__contact-list">
             <div class="footer__contact-item"><i class="fas fa-map-marker-alt"></i><span>5 Highlands Court, Cranmore Avenue, Solihull, B90 4LE</span></div>
-            <div class="footer__contact-item"><i class="fas fa-phone-alt"></i><a href="tel:01217338484">0121 733 8484</a></div>
+            <div class="footer__contact-item"><i class="fas fa-phone-alt"></i><a href="tel:+447877461980">+44 7877 461980</a></div>
             <div class="footer__contact-item"><i class="fas fa-envelope"></i><a href="mailto:info@mancommercialprotection.co.uk">info@mancommercialprotection.co.uk</a></div>
           </div>
         </div>

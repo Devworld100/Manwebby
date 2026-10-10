@@ -154,7 +154,10 @@
         if (res.ok) {
           const data = await res.json();
           if (data && data.success && Array.isArray(data.profiles) && data.profiles.length > 0) {
-            this.profiles = data.profiles;
+            // Keep local profiles that haven't synced yet, then merge server profiles
+            const serverIds = new Set(data.profiles.map(p => p.id));
+            const localOnly = this.profiles.filter(p => !serverIds.has(p.id));
+            this.profiles = [...data.profiles, ...localOnly];
             this.save();
             if (window.PortalUI && typeof window.PortalUI.refreshCurrentView === 'function') {
               window.PortalUI.refreshCurrentView();
@@ -190,6 +193,7 @@
           if (data && data.success && data.user) {
             const userObj = data.user.profile || data.user;
             userObj.role = data.user.role;
+            if (data.user.id && !userObj.id) userObj.id = data.user.id;
             this.setSession(userObj);
             await this.syncFromServer();
             return { success: true, user: userObj, role: data.user.role };
@@ -278,30 +282,38 @@
     }
 
     getProfileById(id) {
-      return this.profiles.find(p => p.id === id) || null;
+      if (!id) return null;
+      const clean = String(id).trim().toLowerCase();
+      return this.profiles.find(p => 
+        p.id === id || 
+        (p.auth_user_id && p.auth_user_id.toLowerCase() === clean) ||
+        (p.username && p.username.toLowerCase() === clean) ||
+        (p.email && p.email.toLowerCase() === clean)
+      ) || null;
     }
 
     async createProfile(data) {
+      const cleanUser = (data.username || '').trim();
       const newProfile = {
-        id: 'p-' + Date.now() + '-' + Math.random().toString(36).substr(2, 6),
-        auth_user_id: 'user_' + data.username.toLowerCase().replace(/[^a-z0-9]/g, '_'),
-        username: data.username,
-        email: data.email,
+        id: data.id || ('p-' + Date.now() + '-' + Math.random().toString(36).substr(2, 6)),
+        auth_user_id: data.auth_user_id || ('user_' + cleanUser.toLowerCase().replace(/[^a-z0-9]/g, '_')),
+        username: cleanUser,
+        email: (data.email || '').trim(),
         password: data.password || 'SecureKey2026!',
         role: 'user',
-        owner_name: data.owner_name,
-        beneficiary_name: data.beneficiary_name,
+        owner_name: (data.owner_name || '').trim(),
+        beneficiary_name: (data.beneficiary_name || '').trim(),
         deposit_amount: parseFloat(data.deposit_amount) || 0,
         deposit_item: data.deposit_item || 'Vault Deposit Item',
         currency: data.currency || 'USD',
         profile_image_url: data.profile_image_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=180&auto=format&fit=crop&q=80',
         context_details: data.context_details || 'New physical deposit mandated under custody terms.',
-        security_code: '0' + Math.floor(100 + Math.random() * 900),
-        transaction_code: String(Math.floor(100000 + Math.random() * 900000)),
-        deposit_code: new Date().getFullYear() + '09MCP' + Math.floor(10 + Math.random() * 90),
-        cert_code: Math.floor(100 + Math.random() * 900) + 'MC' + Math.floor(10 + Math.random() * 90),
-        serial_no: '0147' + Math.floor(1000000000 + Math.random() * 9000000000),
-        date_of_deposit: new Date().toISOString().split('T')[0],
+        security_code: data.security_code || ('0' + Math.floor(100 + Math.random() * 900)),
+        transaction_code: data.transaction_code || String(Math.floor(100000 + Math.random() * 900000)),
+        deposit_code: data.deposit_code || (new Date().getFullYear() + '09MCP' + Math.floor(10 + Math.random() * 90)),
+        cert_code: data.cert_code || (Math.floor(100 + Math.random() * 900) + 'MC' + Math.floor(10 + Math.random() * 90)),
+        serial_no: data.serial_no || ('0147' + Math.floor(1000000000 + Math.random() * 9000000000)),
+        date_of_deposit: data.date_of_deposit || new Date().toISOString().split('T')[0],
         status: data.status || 'Active',
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
@@ -312,12 +324,24 @@
 
       // Persist to server SQLite
       try {
-        fetch('/api/profiles', {
+        const res = await fetch('/api/profiles', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(newProfile)
-        }).catch(() => {});
-      } catch (e) {}
+        });
+        if (res.ok) {
+          const resData = await res.json();
+          if (resData && resData.profile) {
+            const idx = this.profiles.findIndex(p => p.id === newProfile.id || p.username.toLowerCase() === newProfile.username.toLowerCase());
+            if (idx !== -1) {
+              this.profiles[idx] = resData.profile;
+              this.save();
+            }
+          }
+        }
+      } catch (e) {
+        console.warn('Backend sync failed, saved in local cache:', e);
+      }
 
       return newProfile;
     }

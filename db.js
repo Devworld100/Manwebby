@@ -240,10 +240,13 @@ module.exports = {
     const user = stmt.get(clean, clean, password);
     if (!user) return null;
 
-    // If user role, attach associated profile
+    // If user role, attach associated profile case-insensitively
     if (user.role === 'user') {
-      const pStmt = db.prepare(`SELECT * FROM profiles WHERE username = ? OR email = ? OR auth_user_id = ?;`);
-      user.profile = pStmt.get(user.username, user.email, user.id);
+      const pStmt = db.prepare(`
+        SELECT * FROM profiles 
+        WHERE LOWER(username) = ? OR LOWER(email) = ? OR auth_user_id = ? OR id = ?;
+      `);
+      user.profile = pStmt.get(clean, clean, user.id, user.id);
     }
     return user;
   },
@@ -253,23 +256,29 @@ module.exports = {
   },
 
   getProfileById(id) {
-    return db.prepare(`SELECT * FROM profiles WHERE id = ?;`).get(id);
+    if (!id) return null;
+    const clean = String(id).trim().toLowerCase();
+    return db.prepare(`
+      SELECT * FROM profiles 
+      WHERE id = ? OR auth_user_id = ? OR LOWER(username) = ? OR LOWER(email) = ?;
+    `).get(id, id, clean, clean);
   },
 
   createProfile(data) {
     const id = data.id || ('p-' + Date.now() + '-' + Math.random().toString(36).substring(2, 7));
     const now = new Date().toISOString();
-    const authId = 'user_' + data.username.replace(/[^a-zA-Z0-9]/g, '_');
+    const cleanUser = (data.username || '').trim().toLowerCase();
+    const authId = data.auth_user_id || ('user_' + cleanUser.replace(/[^a-z0-9]/g, '_'));
 
-    // Insert user
+    // Insert or replace user
     db.prepare(`
       INSERT OR REPLACE INTO users (id, username, email, password, role, created_at)
       VALUES (?, ?, ?, ?, 'user', ?);
     `).run(authId, data.username, data.email, data.password || 'SecureKey2026!', now);
 
-    // Insert profile
+    // Insert or replace profile
     db.prepare(`
-      INSERT INTO profiles (
+      INSERT OR REPLACE INTO profiles (
         id, auth_user_id, username, email, password, role,
         owner_name, beneficiary_name, deposit_amount, deposit_item, currency,
         profile_image_url, context_details, security_code, transaction_code,
@@ -284,9 +293,12 @@ module.exports = {
       id, authId, data.username, data.email, data.password || 'SecureKey2026!',
       data.owner_name, data.beneficiary_name, Number(data.deposit_amount) || 0, data.deposit_item || 'Vault Deposit', data.currency || 'USD',
       data.profile_image_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=180&auto=format&fit=crop&q=80',
-      data.context_details || '', data.security_code || '0147', data.transaction_code || '529138',
-      data.deposit_code || '198308MZL14', data.cert_code || '316SJ17', data.serial_no || '01479040198308',
-      data.date_of_deposit || new Date().toISOString().split('T')[0], data.status || 'Active', now, now
+      data.context_details || '', data.security_code || ('0' + Math.floor(100 + Math.random() * 900)),
+      data.transaction_code || String(Math.floor(100000 + Math.random() * 900000)),
+      data.deposit_code || (new Date().getFullYear() + '09MCP' + Math.floor(10 + Math.random() * 90)),
+      data.cert_code || (Math.floor(100 + Math.random() * 900) + 'MC' + Math.floor(10 + Math.random() * 90)),
+      data.serial_no || ('0147' + Math.floor(1000000000 + Math.random() * 9000000000)),
+      data.date_of_deposit || new Date().toISOString().split('T')[0], data.status || 'Active', data.created_at || now, now
     );
 
     return this.getProfileById(id);

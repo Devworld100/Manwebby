@@ -29,8 +29,8 @@ function readJsonBody(req) {
     let body = '';
     req.on('data', chunk => {
       body += chunk;
-      if (body.length > 2e6) {
-        reject(new Error('Payload too large'));
+      if (body.length > 15e6) {
+        reject(new Error('Payload too large (15MB limit)'));
       }
     });
     req.on('end', () => {
@@ -91,11 +91,14 @@ async function handleApiRequest(req, res, pathname) {
       sendJson(res, 200, {
         success: true,
         user: {
-          id: user.id,
+          id: (user.profile && user.profile.id) ? user.profile.id : user.id,
+          profile_id: user.profile ? user.profile.id : null,
+          auth_user_id: user.id,
           username: user.username,
           email: user.email,
           role: user.role,
-          profile: user.profile || null
+          profile: user.profile || null,
+          ...(user.profile || {})
         }
       });
       return true;

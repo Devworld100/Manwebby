@@ -8,6 +8,99 @@
 
   let currentUser = null;
   let selectedProfileId = null;
+  let isCreatingFromLogin = false;
+
+  const DEFAULT_AVATAR = 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=180&auto=format&fit=crop&q=80';
+
+  // Client-side image compression & optimization (Canvas max 400x400 JPEG 0.85)
+  function compressImageFile(file, maxWidth = 400, maxHeight = 400, quality = 0.85) {
+    return new Promise((resolve, reject) => {
+      if (!file || !file.type.startsWith('image/')) {
+        return reject(new Error('Please select an image file (PNG, JPG, or WEBP).'));
+      }
+      const reader = new FileReader();
+      reader.onerror = () => reject(new Error('Failed to read image file.'));
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onerror = () => reject(new Error('Failed to load image for processing.'));
+        img.onload = () => {
+          let { width, height } = img;
+          if (width > maxWidth || height > maxHeight) {
+            const ratio = Math.min(maxWidth / width, maxHeight / height);
+            width = Math.round(width * ratio);
+            height = Math.round(height * ratio);
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          const dataUrl = canvas.toDataURL('image/jpeg', quality);
+          resolve(dataUrl);
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function setupAvatarUpload(fileInputId, hiddenUrlId, previewImgId, clearBtnId, defaultUrl) {
+    const fileInput = document.getElementById(fileInputId);
+    const hiddenUrl = document.getElementById(hiddenUrlId);
+    const previewImg = document.getElementById(previewImgId);
+    const clearBtn = document.getElementById(clearBtnId);
+    const uploadBox = fileInput?.closest('.avatar-upload-box');
+
+    if (!fileInput) return;
+
+    async function handleFile(file) {
+      if (!file) return;
+      try {
+        const dataUrl = await compressImageFile(file);
+        hiddenUrl.value = dataUrl;
+        if (previewImg) previewImg.src = dataUrl;
+        showToast('Image uploaded and optimized successfully!', 'success');
+      } catch (err) {
+        showToast(err.message || 'Image upload failed', 'error');
+      }
+    }
+
+    fileInput.addEventListener('change', (e) => {
+      const file = e.target.files?.[0];
+      handleFile(file);
+    });
+
+    if (clearBtn) {
+      clearBtn.addEventListener('click', () => {
+        fileInput.value = '';
+        hiddenUrl.value = defaultUrl;
+        if (previewImg) previewImg.src = defaultUrl;
+        showToast('Avatar reset to default.', 'info');
+      });
+    }
+
+    if (uploadBox) {
+      ['dragenter', 'dragover'].forEach(eventName => {
+        uploadBox.addEventListener(eventName, (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          uploadBox.classList.add('drag-over');
+        });
+      });
+      ['dragleave', 'drop'].forEach(eventName => {
+        uploadBox.addEventListener(eventName, (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          uploadBox.classList.remove('drag-over');
+        });
+      });
+      uploadBox.addEventListener('drop', (e) => {
+        e.preventDefault();
+        const file = e.dataTransfer?.files?.[0];
+        handleFile(file);
+      });
+    }
+  }
 
   document.addEventListener('DOMContentLoaded', () => {
     initPortal();
@@ -24,6 +117,10 @@
   }
 
   function bindEvents() {
+    // Setup Avatar Uploaders (Create & Edit)
+    setupAvatarUpload('create-avatar-file', 'create-avatar-url', 'create-avatar-preview', 'btn-create-clear-avatar', DEFAULT_AVATAR);
+    setupAvatarUpload('edit-avatar-file', 'edit-avatar-url', 'edit-avatar-preview', 'btn-edit-clear-avatar', DEFAULT_AVATAR);
+
     // Login form
     const loginForm = document.getElementById('login-form');
     loginForm?.addEventListener('submit', handleLogin);
@@ -207,10 +304,10 @@
     }
 
     tbody.innerHTML = profiles.map(p => `
-      <tr>
+      <tr data-profile-id="${p.id}">
         <td>
           <div style="display:flex; align-items:center; gap:0.75rem;">
-            <img src="${p.profile_image_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=180&auto=format&fit=crop&q=80'}" style="width:38px; height:38px; border-radius:50%; object-fit:cover; border:1px solid #cbd5e1;" alt="${escapeHtml(p.beneficiary_name)}">
+            <img src="${p.profile_image_url || DEFAULT_AVATAR}" onerror="this.src='${DEFAULT_AVATAR}'" style="width:38px; height:38px; border-radius:50%; object-fit:cover; border:1px solid #cbd5e1;" alt="${escapeHtml(p.beneficiary_name)}">
             <div>
               <strong style="color:var(--portal-navy); font-size:0.95rem;">${escapeHtml(p.beneficiary_name)}</strong>
               <div style="font-size:0.75rem; color:#64748b;"><code>${p.username}</code> &bull; ${escapeHtml(p.email)}</div>
@@ -324,31 +421,84 @@
   }
 
   // --- CRUD Modal Actions ---
-  function openCreateModal() {
-    document.getElementById('create-profile-form').reset();
+  function openCreateModal(fromLogin = false) {
+    isCreatingFromLogin = Boolean(fromLogin);
+    const form = document.getElementById('create-profile-form');
+    if (form) form.reset();
+
+    // Reset Avatar Preview
+    const previewImg = document.getElementById('create-avatar-preview');
+    if (previewImg) previewImg.src = DEFAULT_AVATAR;
+    const hiddenUrl = document.getElementById('create-avatar-url');
+    if (hiddenUrl) hiddenUrl.value = DEFAULT_AVATAR;
+    const fileInput = document.getElementById('create-avatar-file');
+    if (fileInput) fileInput.value = '';
+
     openModal('modal-create-profile');
   }
 
-  function handleCreateProfile(e) {
+  async function handleCreateProfile(e) {
     e.preventDefault();
-    const data = {
-      owner_name: document.getElementById('create-owner-name').value,
-      beneficiary_name: document.getElementById('create-beneficiary-name').value,
-      username: document.getElementById('create-username').value,
-      email: document.getElementById('create-email').value,
-      password: document.getElementById('create-password').value,
-      deposit_amount: document.getElementById('create-deposit-amount').value,
-      deposit_item: document.getElementById('create-deposit-item').value,
-      currency: document.getElementById('create-currency').value,
-      profile_image_url: document.getElementById('create-avatar-url').value,
-      context_details: document.getElementById('create-context-details').value,
-      status: document.getElementById('create-status').value
-    };
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    const originalText = submitBtn ? submitBtn.innerHTML : '';
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+    }
 
-    window.PortalData.createProfile(data);
-    closeAllModals();
-    showToast(`Profile for ${data.beneficiary_name} created successfully!`, 'success');
-    renderAdminDashboard();
+    try {
+      const data = {
+        owner_name: (document.getElementById('create-owner-name')?.value || '').trim(),
+        beneficiary_name: (document.getElementById('create-beneficiary-name')?.value || '').trim(),
+        username: (document.getElementById('create-username')?.value || '').trim(),
+        email: (document.getElementById('create-email')?.value || '').trim(),
+        password: document.getElementById('create-password')?.value || 'SecureKey2026!',
+        deposit_amount: document.getElementById('create-deposit-amount')?.value || 0,
+        deposit_item: (document.getElementById('create-deposit-item')?.value || 'Vault Deposit Item').trim(),
+        currency: document.getElementById('create-currency')?.value || 'USD',
+        profile_image_url: document.getElementById('create-avatar-url')?.value || DEFAULT_AVATAR,
+        context_details: (document.getElementById('create-context-details')?.value || '').trim(),
+        status: document.getElementById('create-status')?.value || 'Active'
+      };
+
+      const newProfile = await window.PortalData.createProfile(data);
+      closeAllModals();
+
+      if (isCreatingFromLogin || !currentUser || currentUser.role !== 'admin') {
+        // Authenticate new user and render their dashboard immediately!
+        currentUser = newProfile;
+        window.PortalData.setSession(newProfile);
+        window.syncPortalNavState?.();
+        renderViewForUser(newProfile);
+        showToast(`Welcome! Your vault mandate account for ${newProfile.beneficiary_name} has been created and verified.`, 'success');
+      } else {
+        // In Admin View: clear search and filter to ensure newly created profile is visible at the top!
+        const searchInput = document.getElementById('admin-search');
+        if (searchInput) searchInput.value = '';
+        const statusSelect = document.getElementById('admin-status-select');
+        if (statusSelect) statusSelect.value = 'ALL';
+
+        renderAdminDashboard();
+        showToast(`Profile for ${data.beneficiary_name} created successfully!`, 'success');
+
+        // Smooth scroll and flash highlight newly created profile row
+        setTimeout(() => {
+          const row = document.querySelector(`tr[data-profile-id="${newProfile.id}"]`);
+          if (row) {
+            row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            row.classList.add('row-highlight-new');
+            setTimeout(() => row.classList.remove('row-highlight-new'), 3500);
+          }
+        }, 100);
+      }
+    } catch (err) {
+      showToast(err.message || 'Error creating profile', 'error');
+    } finally {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
+      }
+    }
   }
 
   function openEditModal(id) {
@@ -364,37 +514,61 @@
     document.getElementById('edit-deposit-amount').value = profile.deposit_amount || '';
     document.getElementById('edit-deposit-item').value = profile.deposit_item || '';
     document.getElementById('edit-currency').value = profile.currency || 'USD';
-    document.getElementById('edit-avatar-url').value = profile.profile_image_url || '';
+
+    // Set edit avatar preview
+    const avatarUrl = profile.profile_image_url || DEFAULT_AVATAR;
+    document.getElementById('edit-avatar-url').value = avatarUrl;
+    const previewImg = document.getElementById('edit-avatar-preview');
+    if (previewImg) previewImg.src = avatarUrl;
+    const fileInput = document.getElementById('edit-avatar-file');
+    if (fileInput) fileInput.value = '';
+
     document.getElementById('edit-context-details').value = profile.context_details || '';
     document.getElementById('edit-status').value = profile.status || 'Active';
 
     openModal('modal-edit-profile');
   }
 
-  function handleEditProfile(e) {
+  async function handleEditProfile(e) {
     e.preventDefault();
     if (!selectedProfileId) return;
 
-    const updates = {
-      owner_name: document.getElementById('edit-owner-name').value,
-      beneficiary_name: document.getElementById('edit-beneficiary-name').value,
-      username: document.getElementById('edit-username').value,
-      email: document.getElementById('edit-email').value,
-      deposit_amount: document.getElementById('edit-deposit-amount').value,
-      deposit_item: document.getElementById('edit-deposit-item').value,
-      currency: document.getElementById('edit-currency').value,
-      profile_image_url: document.getElementById('edit-avatar-url').value,
-      context_details: document.getElementById('edit-context-details').value,
-      status: document.getElementById('edit-status').value
-    };
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    const originalText = submitBtn ? submitBtn.innerHTML : '';
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+    }
 
-    const newPass = document.getElementById('edit-password').value;
-    if (newPass) updates.password = newPass;
+    try {
+      const updates = {
+        owner_name: document.getElementById('edit-owner-name').value.trim(),
+        beneficiary_name: document.getElementById('edit-beneficiary-name').value.trim(),
+        username: document.getElementById('edit-username').value.trim(),
+        email: document.getElementById('edit-email').value.trim(),
+        deposit_amount: document.getElementById('edit-deposit-amount').value,
+        deposit_item: document.getElementById('edit-deposit-item').value.trim(),
+        currency: document.getElementById('edit-currency').value,
+        profile_image_url: document.getElementById('edit-avatar-url').value || DEFAULT_AVATAR,
+        context_details: document.getElementById('edit-context-details').value.trim(),
+        status: document.getElementById('edit-status').value
+      };
 
-    window.PortalData.updateProfile(selectedProfileId, updates);
-    closeAllModals();
-    showToast('Profile updated successfully!', 'success');
-    renderAdminDashboard();
+      const newPass = document.getElementById('edit-password').value;
+      if (newPass) updates.password = newPass;
+
+      await window.PortalData.updateProfile(selectedProfileId, updates);
+      closeAllModals();
+      showToast('Profile updated successfully!', 'success');
+      renderAdminDashboard();
+    } catch (err) {
+      showToast(err.message || 'Error updating profile', 'error');
+    } finally {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
+      }
+    }
   }
 
   // --- Dynamic Reassignment of Names Modal ---
