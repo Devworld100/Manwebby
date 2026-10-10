@@ -13,8 +13,11 @@ yarn-debug.log*
 yarn-error.log*
 
 # Runtime database locks/WAL
+data/*.db
 data/*.db-wal
 data/*.db-shm
+*.sqlite
+*.db
 
 # OS generated files
 .DS_Store
