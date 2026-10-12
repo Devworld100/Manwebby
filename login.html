@@ -500,25 +500,30 @@
 
           <div class="form-group avatar-upload-group">
             <label style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
-              <span><i class="fas fa-camera" style="color:var(--portal-gold); margin-right:5px;"></i> Profile Photo *</span>
-              <span style="font-size:0.75rem; color:#64748b; font-weight:normal;">Upload image (PNG, JPG, WEBP)</span>
+              <span><i class="fas fa-camera" style="color:var(--portal-gold); margin-right:5px;"></i> Beneficiary Profile Photo *</span>
+              <span style="font-size:0.75rem; color:#64748b; font-weight:normal;">PNG, JPG, WEBP (Auto-saved to server)</span>
             </label>
-            <div class="avatar-upload-box">
+            <div class="avatar-upload-box" id="create-avatar-box">
               <div class="avatar-preview-wrap">
                 <img id="create-avatar-preview" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=180&auto=format&fit=crop&q=80" alt="Avatar Preview" class="avatar-preview-img">
+                <div class="avatar-preview-loading" id="create-avatar-loading">
+                  <i class="fas fa-spinner fa-spin fa-lg"></i>
+                  <span>Uploading</span>
+                </div>
               </div>
               <div class="avatar-upload-actions">
-                <input type="file" id="create-avatar-file" accept="image/*" style="display:none;">
+                <input type="file" id="create-avatar-file" accept="image/png,image/jpeg,image/webp,image/gif" style="display:none;">
                 <input type="hidden" id="create-avatar-url" value="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=180&auto=format&fit=crop&q=80">
-                <div style="display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center;">
+                <div class="avatar-btn-row">
                   <button type="button" class="btn btn--sm btn--primary" onclick="document.getElementById('create-avatar-file').click()">
-                    <i class="fas fa-upload"></i> Upload Image
+                    <i class="fas fa-cloud-arrow-up"></i> Upload Image
                   </button>
                   <button type="button" class="btn btn--sm btn--outline" id="btn-create-clear-avatar" style="color:#ef4444; border-color:#fca5a5;">
                     <i class="fas fa-undo"></i> Reset Default
                   </button>
                 </div>
-                <div class="avatar-upload-hint">Click "Upload Image" to choose a file, or drag &amp; drop an image onto the box.</div>
+                <div class="avatar-status-badge" id="create-avatar-status" style="display:none;"></div>
+                <div class="avatar-upload-hint"><i class="fas fa-cloud-arrow-up text-gold" style="color:var(--portal-gold); margin-right:4px;"></i> Click to browse or drag &amp; drop an image. Saves securely to server.</div>
               </div>
             </div>
           </div>
@@ -604,25 +609,30 @@
 
           <div class="form-group avatar-upload-group">
             <label style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
-              <span><i class="fas fa-camera" style="color:var(--portal-gold); margin-right:5px;"></i> Profile Photo</span>
-              <span style="font-size:0.75rem; color:#64748b; font-weight:normal;">Upload image (PNG, JPG, WEBP)</span>
+              <span><i class="fas fa-camera" style="color:var(--portal-gold); margin-right:5px;"></i> Beneficiary Profile Photo</span>
+              <span style="font-size:0.75rem; color:#64748b; font-weight:normal;">PNG, JPG, WEBP (Auto-saved to server)</span>
             </label>
-            <div class="avatar-upload-box">
+            <div class="avatar-upload-box" id="edit-avatar-box">
               <div class="avatar-preview-wrap">
                 <img id="edit-avatar-preview" src="" alt="Avatar Preview" class="avatar-preview-img">
+                <div class="avatar-preview-loading" id="edit-avatar-loading">
+                  <i class="fas fa-spinner fa-spin fa-lg"></i>
+                  <span>Uploading</span>
+                </div>
               </div>
               <div class="avatar-upload-actions">
-                <input type="file" id="edit-avatar-file" accept="image/*" style="display:none;">
+                <input type="file" id="edit-avatar-file" accept="image/png,image/jpeg,image/webp,image/gif" style="display:none;">
                 <input type="hidden" id="edit-avatar-url" value="">
-                <div style="display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center;">
+                <div class="avatar-btn-row">
                   <button type="button" class="btn btn--sm btn--primary" onclick="document.getElementById('edit-avatar-file').click()">
-                    <i class="fas fa-upload"></i> Upload New Image
+                    <i class="fas fa-cloud-arrow-up"></i> Upload New Image
                   </button>
                   <button type="button" class="btn btn--sm btn--outline" id="btn-edit-clear-avatar" style="color:#ef4444; border-color:#fca5a5;">
                     <i class="fas fa-undo"></i> Reset Default
                   </button>
                 </div>
-                <div class="avatar-upload-hint">Upload a new photo to replace current avatar. Auto-compressed &amp; secure.</div>
+                <div class="avatar-status-badge" id="edit-avatar-status" style="display:none;"></div>
+                <div class="avatar-upload-hint"><i class="fas fa-cloud-arrow-up text-gold" style="color:var(--portal-gold); margin-right:4px;"></i> Click to browse or drag &amp; drop a new photo. Saves securely to server.</div>
               </div>
             </div>
           </div>

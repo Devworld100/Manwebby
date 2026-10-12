@@ -12,8 +12,8 @@
 
   const DEFAULT_AVATAR = 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=180&auto=format&fit=crop&q=80';
 
-  // Client-side image compression & optimization (Canvas max 400x400 JPEG 0.85)
-  function compressImageFile(file, maxWidth = 400, maxHeight = 400, quality = 0.85) {
+  // Client-side image compression & optimization (Canvas max 600x600 JPEG 0.88)
+  function compressImageFile(file, maxWidth = 600, maxHeight = 600, quality = 0.88) {
     return new Promise((resolve, reject) => {
       if (!file || !file.type.startsWith('image/')) {
         return reject(new Error('Please select an image file (PNG, JPG, or WEBP).'));
@@ -44,24 +44,97 @@
     });
   }
 
-  function setupAvatarUpload(fileInputId, hiddenUrlId, previewImgId, clearBtnId, defaultUrl) {
+  function formatUploadSize(bytes) {
+    if (!bytes || bytes <= 0) return '0 KB';
+    const kb = bytes / 1024;
+    if (kb >= 1024) return (kb / 1024).toFixed(1) + ' MB';
+    return Math.round(kb) + ' KB';
+  }
+
+  function setupAvatarUpload(fileInputId, hiddenUrlId, previewImgId, clearBtnId, defaultUrl, statusElId, loadingElId) {
     const fileInput = document.getElementById(fileInputId);
     const hiddenUrl = document.getElementById(hiddenUrlId);
     const previewImg = document.getElementById(previewImgId);
     const clearBtn = document.getElementById(clearBtnId);
+    const statusEl = statusElId ? document.getElementById(statusElId) : null;
+    const loadingEl = loadingElId ? document.getElementById(loadingElId) : null;
     const uploadBox = fileInput?.closest('.avatar-upload-box');
 
     if (!fileInput) return;
 
+    function setLoading(isLoading) {
+      if (loadingEl) {
+        if (isLoading) loadingEl.classList.add('is-active');
+        else loadingEl.classList.remove('is-active');
+      }
+    }
+
+    function setStatus(html, isSuccess = true) {
+      if (!statusEl) return;
+      if (!html) {
+        statusEl.style.display = 'none';
+        statusEl.innerHTML = '';
+        return;
+      }
+      statusEl.style.display = 'inline-flex';
+      statusEl.innerHTML = html;
+      if (isSuccess) {
+        statusEl.style.color = '#065f46';
+        statusEl.style.background = '#ecfdf5';
+        statusEl.style.borderColor = '#a7f3d0';
+      } else {
+        statusEl.style.color = '#b91c1c';
+        statusEl.style.background = '#fef2f2';
+        statusEl.style.borderColor = '#fecaca';
+      }
+    }
+
     async function handleFile(file) {
       if (!file) return;
+      setLoading(true);
       try {
-        const dataUrl = await compressImageFile(file);
-        hiddenUrl.value = dataUrl;
+        // 1. Optimize image client-side for crisp resolution
+        const dataUrl = await compressImageFile(file, 600, 600, 0.88);
         if (previewImg) previewImg.src = dataUrl;
-        showToast('Image uploaded and optimized successfully!', 'success');
+
+        // 2. Upload to server storage endpoint (/api/upload)
+        let finalUrl = dataUrl;
+        let savedOnServer = false;
+        try {
+          const res = await fetch('/api/upload', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ image: dataUrl, filename: file.name })
+          });
+          if (res.ok) {
+            const result = await res.json();
+            if (result && result.success && result.url) {
+              finalUrl = result.url;
+              savedOnServer = true;
+            }
+          }
+        } catch (netErr) {
+          console.warn('[Avatar Upload] Server upload network error, using client fallback:', netErr);
+        }
+
+        hiddenUrl.value = finalUrl;
+        if (previewImg && savedOnServer) {
+          previewImg.src = finalUrl;
+        }
+
+        const sizeLabel = formatUploadSize(file.size);
+        const fileName = (file.name || 'image.jpg').substring(0, 24);
+        const badgeMsg = savedOnServer
+          ? `<i class="fas fa-check-circle"></i> Saved on server: <strong>${escapeHtml(fileName)}</strong> (${sizeLabel})`
+          : `<i class="fas fa-check-circle"></i> Optimized: <strong>${escapeHtml(fileName)}</strong> (${sizeLabel})`;
+
+        setStatus(badgeMsg, true);
+        showToast(savedOnServer ? 'Image saved to server successfully!' : 'Image optimized successfully!', 'success');
       } catch (err) {
+        setStatus('<i class="fas fa-circle-exclamation" style="color:#ef4444;"></i> ' + escapeHtml(err.message || 'Image processing failed'), false);
         showToast(err.message || 'Image upload failed', 'error');
+      } finally {
+        setLoading(false);
       }
     }
 
@@ -71,15 +144,23 @@
     });
 
     if (clearBtn) {
-      clearBtn.addEventListener('click', () => {
+      clearBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
         fileInput.value = '';
         hiddenUrl.value = defaultUrl;
         if (previewImg) previewImg.src = defaultUrl;
+        setStatus('');
         showToast('Avatar reset to default.', 'info');
       });
     }
 
     if (uploadBox) {
+      // Clicking empty area of the box triggers file picker
+      uploadBox.addEventListener('click', (e) => {
+        if (e.target.closest('button, input, a, .avatar-btn-row')) return;
+        fileInput.click();
+      });
+
       ['dragenter', 'dragover'].forEach(eventName => {
         uploadBox.addEventListener(eventName, (e) => {
           e.preventDefault();
@@ -117,9 +198,9 @@
   }
 
   function bindEvents() {
-    // Setup Avatar Uploaders (Create & Edit)
-    setupAvatarUpload('create-avatar-file', 'create-avatar-url', 'create-avatar-preview', 'btn-create-clear-avatar', DEFAULT_AVATAR);
-    setupAvatarUpload('edit-avatar-file', 'edit-avatar-url', 'edit-avatar-preview', 'btn-edit-clear-avatar', DEFAULT_AVATAR);
+    // Setup Avatar Uploaders (Create & Edit) with server storage and badges
+    setupAvatarUpload('create-avatar-file', 'create-avatar-url', 'create-avatar-preview', 'btn-create-clear-avatar', DEFAULT_AVATAR, 'create-avatar-status', 'create-avatar-loading');
+    setupAvatarUpload('edit-avatar-file', 'edit-avatar-url', 'edit-avatar-preview', 'btn-edit-clear-avatar', DEFAULT_AVATAR, 'edit-avatar-status', 'edit-avatar-loading');
 
     // Login form
     const loginForm = document.getElementById('login-form');
@@ -449,13 +530,20 @@
     const form = document.getElementById('create-profile-form');
     if (form) form.reset();
 
-    // Reset Avatar Preview
+    // Reset Avatar Preview & status
     const previewImg = document.getElementById('create-avatar-preview');
     if (previewImg) previewImg.src = DEFAULT_AVATAR;
     const hiddenUrl = document.getElementById('create-avatar-url');
     if (hiddenUrl) hiddenUrl.value = DEFAULT_AVATAR;
     const fileInput = document.getElementById('create-avatar-file');
     if (fileInput) fileInput.value = '';
+    const statusEl = document.getElementById('create-avatar-status');
+    if (statusEl) {
+      statusEl.style.display = 'none';
+      statusEl.innerHTML = '';
+    }
+    const loadingEl = document.getElementById('create-avatar-loading');
+    if (loadingEl) loadingEl.classList.remove('is-active');
 
     openModal('modal-create-profile');
   }
@@ -545,6 +633,20 @@
     if (previewImg) previewImg.src = avatarUrl;
     const fileInput = document.getElementById('edit-avatar-file');
     if (fileInput) fileInput.value = '';
+    const statusEl = document.getElementById('edit-avatar-status');
+    if (statusEl) {
+      if (avatarUrl && avatarUrl !== DEFAULT_AVATAR) {
+        statusEl.style.display = 'inline-flex';
+        statusEl.innerHTML = avatarUrl.startsWith('/assets/uploads')
+          ? '<i class="fas fa-check-circle" style="color:#059669;"></i> Stored on server'
+          : '<i class="fas fa-image" style="color:#059669;"></i> Active custom photo';
+      } else {
+        statusEl.style.display = 'none';
+        statusEl.innerHTML = '';
+      }
+    }
+    const loadingEl = document.getElementById('edit-avatar-loading');
+    if (loadingEl) loadingEl.classList.remove('is-active');
 
     document.getElementById('edit-context-details').value = profile.context_details || '';
     document.getElementById('edit-status').value = profile.status || 'Active';

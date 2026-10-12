@@ -23,6 +23,7 @@ const MIME_TYPES = {
   '.ico': 'image/x-icon',
   '.mp4': 'video/mp4',
   '.webm': 'video/webm',
+  '.webp': 'image/webp',
   '.woff': 'font/woff',
   '.woff2': 'font/woff2',
   '.ttf': 'font/ttf'
@@ -202,6 +203,64 @@ async function handleApiRequest(req, res, pathname) {
     }
   }
 
+  // POST /api/upload (Image file storage)
+  if (pathname === '/api/upload' && req.method === 'POST') {
+    try {
+      const body = await readJsonBody(req);
+      const rawData = body.image || body.data;
+      if (!rawData) {
+        sendJson(res, 400, { success: false, message: 'No image data provided.' });
+        return true;
+      }
+
+      // If already a remote or assets URL, echo it
+      if (typeof rawData === 'string' && (rawData.startsWith('http://') || rawData.startsWith('https://') || rawData.startsWith('/assets/'))) {
+        sendJson(res, 200, { success: true, url: rawData });
+        return true;
+      }
+
+      const matches = String(rawData).match(/^data:image\/([a-zA-Z0-9+.-]+);base64,(.+)$/);
+      if (!matches) {
+        sendJson(res, 400, { success: false, message: 'Invalid image payload. Expected base64 Data URI.' });
+        return true;
+      }
+
+      let subType = matches[1].toLowerCase();
+      if (subType === 'jpeg') subType = 'jpg';
+      if (!['png', 'jpg', 'webp', 'gif'].includes(subType)) {
+        subType = 'jpg';
+      }
+
+      const buffer = Buffer.from(matches[2], 'base64');
+      const crypto = require('crypto');
+      const safeId = Date.now() + '-' + crypto.randomBytes(4).toString('hex');
+      const fileName = `avatar-${safeId}.${subType}`;
+      const uploadDir = path.join(ROOT, 'assets', 'uploads');
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+      }
+
+      const targetPath = path.join(uploadDir, fileName);
+      fs.writeFileSync(targetPath, buffer);
+
+      // Invalidate resolved cache
+      resolvedPathCache.delete(`assets/uploads/${fileName}`);
+      resolvedPathCache.delete(`/assets/uploads/${fileName}`);
+
+      const publicUrl = `/assets/uploads/${fileName}`;
+      sendJson(res, 200, {
+        success: true,
+        url: publicUrl,
+        filename: fileName,
+        size: buffer.length
+      });
+      return true;
+    } catch (err) {
+      sendJson(res, 500, { success: false, message: err.message });
+      return true;
+    }
+  }
+
   if (pathname.startsWith('/api/')) {
     sendJson(res, 404, { success: false, message: 'API endpoint not found' });
     return true;
@@ -257,6 +316,7 @@ const server = http.createServer(async (req, res) => {
     filePath = path.join(ROOT, safePath);
     if (!fs.existsSync(filePath) || !fs.statSync(filePath, { throwIfNoEntry: false })?.isFile()) {
       const candidatePaths = [
+        path.join(ROOT, 'assets', 'uploads', path.basename(safePath)),
         path.join(ROOT, 'assets', 'images', safePath),
         path.join(ROOT, 'assets', 'videos', safePath),
         path.join(ROOT, 'docs', safePath),

@@ -741,28 +741,42 @@
   display: flex;
   align-items: center;
   gap: 1.25rem;
-  padding: 1rem 1.25rem;
+  padding: 1.15rem 1.25rem;
   background: #f8fafc;
   border: 2px dashed #cbd5e1;
-  border-radius: 10px;
-  transition: all 0.2s ease;
+  border-radius: 12px;
+  transition: all 0.25s ease;
+  position: relative;
+  cursor: pointer;
+}
+.avatar-upload-box:hover {
+  border-color: var(--portal-gold);
+  background: #fcfcfb;
 }
 .avatar-upload-box.drag-over {
-  border-color: var(--portal-red);
-  background: #fff1f2;
+  border-color: var(--portal-gold);
+  background: rgba(200, 169, 81, 0.08);
+  box-shadow: 0 0 0 3px rgba(200, 169, 81, 0.25);
+  transform: scale(1.01);
 }
 .avatar-preview-wrap {
-  width: 72px;
-  height: 72px;
+  width: 86px;
+  height: 86px;
   border-radius: 50%;
-  border: 3px solid #ffffff;
-  box-shadow: 0 4px 10px rgba(15, 25, 35, 0.15);
+  border: 3px solid var(--portal-gold);
+  box-shadow: 0 4px 12px rgba(15, 25, 35, 0.2);
   overflow: hidden;
   flex-shrink: 0;
-  background: #e2e8f0;
+  background: #0f1923;
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.avatar-upload-box:hover .avatar-preview-wrap {
+  transform: scale(1.03);
+  box-shadow: 0 6px 16px rgba(200, 169, 81, 0.3);
 }
 .avatar-preview-img {
   width: 100%;
@@ -770,13 +784,56 @@
   object-fit: cover;
   display: block;
 }
+.avatar-preview-loading {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 25, 35, 0.78);
+  color: var(--portal-gold);
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+  gap: 4px;
+  border-radius: 50%;
+  z-index: 2;
+}
+.avatar-preview-loading.is-active {
+  display: flex;
+}
 .avatar-upload-actions {
   flex: 1;
+  min-width: 0;
+}
+.avatar-btn-row {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.avatar-status-badge {
+  margin-top: 0.45rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: #065f46;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  padding: 0.25rem 0.65rem;
+  border-radius: 6px;
+  max-width: 100%;
+  word-break: break-all;
+}
+.avatar-status-badge i {
+  color: #059669;
 }
 .avatar-upload-hint {
-  font-size: 0.75rem;
+  font-size: 0.76rem;
   color: #64748b;
-  margin-top: 0.4rem;
+  margin-top: 0.45rem;
   line-height: 1.4;
 }
 
