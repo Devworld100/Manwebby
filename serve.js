@@ -270,8 +270,30 @@ async function handleApiRequest(req, res, pathname) {
 }
 
 const server = http.createServer(async (req, res) => {
-  const parsedUrl = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
-  let pathname = decodeURIComponent(parsedUrl.pathname);
+  try {
+    let parsedUrl;
+    try {
+      // Normalize URL: strip multiple leading slashes (e.g. "//?author=1" or "///")
+      // which WHATWG URL parser interprets as protocol-relative with an empty host
+      let rawUrl = (req.url || '/').trim();
+      if (rawUrl.startsWith('//')) {
+        rawUrl = '/' + rawUrl.replace(/^\/+/, '');
+      }
+      parsedUrl = new URL(rawUrl, 'http://127.0.0.1');
+    } catch (urlErr) {
+      res.writeHead(400, { 'Content-Type': 'text/plain; charset=utf-8' });
+      res.end('400 Bad Request');
+      return;
+    }
+
+    let pathname = parsedUrl.pathname;
+    try {
+      pathname = decodeURIComponent(pathname);
+    } catch (e) {
+      res.writeHead(400, { 'Content-Type': 'text/plain; charset=utf-8' });
+      res.end('400 Bad Request');
+      return;
+    }
 
   // Handle REST API requests
   if (pathname.startsWith('/api/')) {
@@ -334,12 +356,13 @@ const server = http.createServer(async (req, res) => {
     }
   }
 
-  fs.stat(filePath, (err, stats) => {
-    if (err || !stats.isFile()) {
-      res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
-      res.end('404 Not Found');
-      return;
-    }
+    fs.stat(filePath, (err, stats) => {
+      try {
+        if (err || !stats.isFile()) {
+          res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
+          res.end('404 Not Found');
+          return;
+        }
 
     const ext = path.extname(filePath).toLowerCase();
     const contentType = MIME_TYPES[ext] || 'application/octet-stream';
@@ -456,10 +479,32 @@ const server = http.createServer(async (req, res) => {
       'Access-Control-Allow-Origin': '*',
       'Cache-Control': cacheHeader
     });
-    const fallbackStream = fs.createReadStream(filePath);
-    fallbackStream.on('error', () => res.end());
-    fallbackStream.pipe(res);
+      const fallbackStream = fs.createReadStream(filePath);
+      fallbackStream.on('error', () => res.end());
+      fallbackStream.pipe(res);
+    } catch (statErr) {
+      console.error('[Static File Serving Error]:', statErr);
+      if (!res.headersSent) {
+        res.writeHead(500, { 'Content-Type': 'text/plain; charset=utf-8' });
+        res.end('500 Internal Server Error');
+      }
+    }
   });
+} catch (serverErr) {
+  console.error('[Server Request Error]:', serverErr);
+  if (!res.headersSent) {
+    res.writeHead(500, { 'Content-Type': 'text/plain; charset=utf-8' });
+    res.end('500 Internal Server Error');
+  }
+}
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('[Process UncaughtException]:', err);
+});
+
+process.on('unhandledRejection', (reason) => {
+  console.error('[Process UnhandledRejection]:', reason);
 });
 
 // Render Keep-Alive: Ping service every 10 minutes to prevent free-tier spin down
