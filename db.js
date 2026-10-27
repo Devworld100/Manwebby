@@ -260,7 +260,41 @@ module.exports = {
   async ensureSeedData() {
     await this.ensureAdminUser();
 
-    // Check if seed profiles already exist in SQLite
+    // 1. Supabase Cloud PostgreSQL Seeding
+    if (supabase) {
+      for (const seed of SEED_PROFILES) {
+        try {
+          const { data: existing } = await supabase
+            .from('profiles')
+            .select('id')
+            .or(`id.eq.${seed.id},username.eq.${seed.username}`)
+            .limit(1);
+
+          if (!existing || existing.length === 0) {
+            await supabase.from('users').upsert({
+              id: seed.auth_user_id,
+              username: seed.username,
+              email: seed.email,
+              password: seed.password,
+              role: 'user',
+              created_at: seed.created_at
+            }, { onConflict: 'username' });
+
+            const seedCopy = { ...seed };
+            const { error: pErr } = await supabase.from('profiles').upsert(seedCopy, { onConflict: 'username' });
+            if (pErr && pErr.message && pErr.message.includes('signature')) {
+              delete seedCopy.signature;
+              await supabase.from('profiles').upsert(seedCopy, { onConflict: 'username' });
+            }
+            console.log(`[Supabase Seed] Seed profile ensured: ${seed.username} (${seed.beneficiary_name})`);
+          }
+        } catch (sErr) {
+          console.error(`[Supabase Seed Exception for ${seed.username}]:`, sErr.message);
+        }
+      }
+    }
+
+    // 2. SQLite Fallback Seeding
     for (const seed of SEED_PROFILES) {
       const existing = sqliteDb.prepare(`
         SELECT id FROM profiles WHERE id = ? OR username = ?;
@@ -268,7 +302,6 @@ module.exports = {
 
       if (!existing) {
         try {
-          // Insert profile
           sqliteDb.prepare(`
             INSERT OR REPLACE INTO profiles (
               id, auth_user_id, username, email, password, role,
@@ -289,7 +322,6 @@ module.exports = {
             seed.date_of_deposit, seed.status, seed.created_at, seed.updated_at
           );
 
-          // Insert user auth credentials
           sqliteDb.prepare(`
             INSERT OR REPLACE INTO users (id, username, email, password, role, created_at)
             VALUES (?, ?, ?, ?, 'user', ?);
@@ -339,32 +371,75 @@ module.exports = {
       };
     }
 
-    // 2. Supabase Mode
+    // 2. Supabase Cloud Mode
     if (supabase) {
-      const { data: users, error } = await supabase
-        .from('users')
-        .select('*')
-        .or(`username.ilike.${rawClean},email.ilike.${rawClean}`);
-
-      if (error || !users || users.length === 0) return null;
-      const user = users.find(u => 
-        u.password === cleanPass ||
-        u.password.toLowerCase() === cleanPass.toLowerCase() ||
-        (cleanPass.toLowerCase() === 'password123' && u.password === 'Password123!') ||
-        (cleanPass.toLowerCase() === 'password' && (u.password === 'Password123!' || u.password === 'SecureKey2026!'))
-      );
-      if (!user) return null;
-
-      if (user.role === 'user') {
-        const { data: profiles } = await supabase
-          .from('profiles')
+      try {
+        // A. Search in users table
+        const { data: users } = await supabase
+          .from('users')
           .select('*')
-          .or(`username.ilike.${rawClean},email.ilike.${rawClean},auth_user_id.eq.${user.id},id.eq.${user.id}`)
-          .limit(1);
+          .or(`username.ilike.${rawClean},email.ilike.${rawClean},username.ilike.${rawClean}.%`);
 
-        user.profile = (profiles && profiles.length > 0) ? profiles[0] : null;
+        let matchedUser = (users || []).find(u => 
+          u.password === cleanPass ||
+          u.password.toLowerCase() === cleanPass.toLowerCase() ||
+          (cleanPass.toLowerCase() === 'password123' && u.password === 'Password123!') ||
+          (cleanPass.toLowerCase() === 'password' && (u.password === 'Password123!' || u.password === 'SecureKey2026!'))
+        );
+
+        // B. If not in users table, search in profiles table directly (vital for profiles created online)
+        if (!matchedUser) {
+          const { data: profiles } = await supabase
+            .from('profiles')
+            .select('*')
+            .or(`username.ilike.${rawClean},email.ilike.${rawClean},username.ilike.${rawClean}.%`);
+
+          const matchedProfile = (profiles || []).find(p => 
+            p.password === cleanPass ||
+            p.password.toLowerCase() === cleanPass.toLowerCase() ||
+            (cleanPass.toLowerCase() === 'password123' && p.password === 'Password123!') ||
+            (cleanPass.toLowerCase() === 'password' && (p.password === 'Password123!' || p.password === 'SecureKey2026!'))
+          );
+
+          if (matchedProfile) {
+            matchedUser = {
+              id: matchedProfile.auth_user_id || matchedProfile.id,
+              username: matchedProfile.username,
+              email: matchedProfile.email,
+              password: matchedProfile.password,
+              role: matchedProfile.role || 'user',
+              profile: matchedProfile
+            };
+
+            // Self-heal users credentials table in Supabase
+            try {
+              await supabase.from('users').upsert({
+                id: matchedUser.id,
+                username: matchedUser.username,
+                email: matchedUser.email,
+                password: matchedUser.password,
+                role: matchedUser.role,
+                created_at: matchedProfile.created_at || new Date().toISOString()
+              }, { onConflict: 'username' });
+            } catch (e) {}
+          }
+        }
+
+        if (matchedUser) {
+          if (matchedUser.role === 'user' && !matchedUser.profile) {
+            const { data: pList } = await supabase
+              .from('profiles')
+              .select('*')
+              .or(`username.ilike.${matchedUser.username},email.ilike.${matchedUser.email},auth_user_id.eq.${matchedUser.id},id.eq.${matchedUser.id}`)
+              .limit(1);
+
+            matchedUser.profile = (pList && pList.length > 0) ? pList[0] : null;
+          }
+          return matchedUser;
+        }
+      } catch (supaErr) {
+        console.error('[Supabase Auth Exception]:', supaErr.message);
       }
-      return user;
     }
 
     // 3. SQLite Fallback - Search in users table with alias & username prefix support (e.g. "anita" -> "anita.johnson")
@@ -540,11 +615,26 @@ module.exports = {
         throw new Error(userError.message);
       }
 
-      const { data: created, error } = await supabase
+      let created = null;
+      let { data: resData, error } = await supabase
         .from('profiles')
         .upsert(profileData)
         .select()
         .single();
+
+      if (error && error.message && error.message.includes('signature')) {
+        const fallbackProfile = { ...profileData };
+        delete fallbackProfile.signature;
+        const retryRes = await supabase
+          .from('profiles')
+          .upsert(fallbackProfile)
+          .select()
+          .single();
+        created = retryRes.data;
+        error = retryRes.error;
+      } else {
+        created = resData;
+      }
 
       if (error) {
         console.error('[Supabase createProfile Error]:', error.message);
