@@ -77,6 +77,7 @@ async function handleApiRequest(req, res, pathname) {
   if (pathname === '/api/health' && req.method === 'GET') {
     sendJson(res, 200, {
       status: 'ok',
+      version: '1.0.1',
       engine: 'MAN Commercial Secure API',
       database: db.getEngineName(),
       timestamp: new Date().toISOString()

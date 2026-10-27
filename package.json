@@ -1,6 +1,6 @@
 {
   "name": "man-portal",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "MAN Commercial Protection - Corporate Website & Vault Custody Portal",
   "main": "serve.js",
   "scripts": {
