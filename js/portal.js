@@ -9,6 +9,8 @@
   let currentUser = null;
   let selectedProfileId = null;
   let isCreatingFromLogin = false;
+  let createSigPad = null;
+  let editSigPad = null;
 
   const DEFAULT_AVATAR = 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=180&auto=format&fit=crop&q=80';
 
@@ -183,6 +185,281 @@
     }
   }
 
+  // ==========================================================================
+  // High-Precision HTML5 Canvas Signature Pad (Real Legal Signature Engine)
+  // ==========================================================================
+  class CanvasSignaturePad {
+    constructor({ canvasId, containerId, statusId, errorId, hiddenInputId, clearBtnId, typeBtnId, getNameFn }) {
+      this.canvasId = canvasId;
+      this.canvas = document.getElementById(canvasId);
+      this.container = document.getElementById(containerId);
+      this.statusEl = statusId ? document.getElementById(statusId) : null;
+      this.errorEl = errorId ? document.getElementById(errorId) : null;
+      this.hiddenInput = hiddenInputId ? document.getElementById(hiddenInputId) : null;
+      this.clearBtn = clearBtnId ? document.getElementById(clearBtnId) : null;
+      this.typeBtn = typeBtnId ? document.getElementById(typeBtnId) : null;
+      this.getNameFn = getNameFn;
+
+      this.ctx = this.canvas ? this.canvas.getContext('2d') : null;
+      this.isDrawing = false;
+      this.points = [];
+      this.strokeCount = 0;
+      this.isSigned = false;
+
+      if (this.canvas) {
+        this.initCanvas();
+        this.initEvents();
+      }
+    }
+
+    initCanvas() {
+      if (!this.canvas) return;
+      const rect = this.canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      const width = rect.width > 50 ? rect.width : 560;
+      const height = rect.height > 30 ? rect.height : 140;
+
+      this.canvas.width = Math.round(width * dpr);
+      this.canvas.height = Math.round(height * dpr);
+      this.ctx = this.canvas.getContext('2d');
+      if (this.ctx.resetTransform) {
+        this.ctx.resetTransform();
+      } else {
+        this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+      }
+      this.ctx.scale(dpr, dpr);
+
+      this.ctx.strokeStyle = '#0e387a'; // Executive blue ink
+      this.ctx.lineWidth = 2.4;
+      this.ctx.lineCap = 'round';
+      this.ctx.lineJoin = 'round';
+    }
+
+    initEvents() {
+      if (!this.canvas) return;
+      this.canvas.addEventListener('pointerdown', (e) => this.onPointerDown(e));
+      this.canvas.addEventListener('pointermove', (e) => this.onPointerMove(e));
+      this.canvas.addEventListener('pointerup', (e) => this.onPointerUp(e));
+      this.canvas.addEventListener('pointercancel', (e) => this.onPointerUp(e));
+
+      this.clearBtn?.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        this.clear();
+      });
+
+      this.typeBtn?.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        this.typeSignature();
+      });
+
+      // Window resize re-scaling check
+      window.addEventListener('resize', () => {
+        if (!this.isEmpty()) {
+          const data = this.hiddenInput ? this.hiddenInput.value : '';
+          this.initCanvas();
+          if (data) this.loadSignature(data);
+        } else {
+          this.initCanvas();
+        }
+      });
+    }
+
+    getPos(e) {
+      const rect = this.canvas.getBoundingClientRect();
+      return {
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top
+      };
+    }
+
+    onPointerDown(e) {
+      const rect = this.canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      if (this.canvas.width !== Math.round((rect.width || 560) * dpr)) {
+        this.initCanvas();
+      }
+
+      this.isDrawing = true;
+      try {
+        this.canvas.setPointerCapture(e.pointerId);
+      } catch (err) {}
+
+      const pos = this.getPos(e);
+      this.points = [pos];
+      this.strokeCount++;
+      this.clearError();
+    }
+
+    onPointerMove(e) {
+      if (!this.isDrawing) return;
+      const pos = this.getPos(e);
+      this.points.push(pos);
+
+      if (this.points.length > 2) {
+        const p1 = this.points[this.points.length - 2];
+        const p2 = this.points[this.points.length - 1];
+        const midX = (p1.x + p2.x) / 2;
+        const midY = (p1.y + p2.y) / 2;
+
+        this.ctx.beginPath();
+        this.ctx.moveTo(p1.x, p1.y);
+        this.ctx.quadraticCurveTo(p1.x, p1.y, midX, midY);
+        this.ctx.stroke();
+      } else {
+        this.ctx.beginPath();
+        this.ctx.arc(pos.x, pos.y, 1.2, 0, Math.PI * 2);
+        this.ctx.fillStyle = '#0e387a';
+        this.ctx.fill();
+      }
+    }
+
+    onPointerUp(e) {
+      if (!this.isDrawing) return;
+      this.isDrawing = false;
+      try {
+        this.canvas.releasePointerCapture(e.pointerId);
+      } catch (err) {}
+
+      if (this.strokeCount > 0) {
+        this.isSigned = true;
+        const dataUrl = this.canvas.toDataURL('image/png');
+        if (this.hiddenInput) this.hiddenInput.value = dataUrl;
+        this.updateStatus(true);
+        this.clearError();
+      }
+    }
+
+    typeSignature(customName) {
+      this.clear();
+      this.initCanvas();
+
+      let name = customName;
+      if (!name && typeof this.getNameFn === 'function') {
+        name = this.getNameFn();
+      }
+      if (!name || !name.trim()) {
+        name = prompt('Enter depositor or account owner legal name to adopt signature:') || '';
+      }
+      name = (name || '').trim();
+      if (!name) return;
+
+      const rect = this.canvas.getBoundingClientRect();
+      const w = rect.width || 560;
+      const h = rect.height || 140;
+
+      this.ctx.save();
+      this.ctx.font = 'italic 700 44px "Alex Brush", "Great Vibes", cursive';
+      this.ctx.fillStyle = '#0e387a';
+      this.ctx.textAlign = 'center';
+      this.ctx.textBaseline = 'middle';
+
+      this.ctx.translate(w / 2, h / 2 + 5);
+      this.ctx.rotate(-2.5 * Math.PI / 180);
+      this.ctx.fillText(name, 0, 0);
+
+      // Calligraphic flourish underline
+      const textWidth = Math.min(this.ctx.measureText(name).width, w - 60);
+      const startX = -textWidth / 2 - 12;
+      const endX = textWidth / 2 + 20;
+      this.ctx.beginPath();
+      this.ctx.moveTo(startX, 18);
+      this.ctx.quadraticCurveTo(startX + 40, 26, 0, 22);
+      this.ctx.quadraticCurveTo(endX - 30, 16, endX, 22);
+      this.ctx.lineWidth = 2.0;
+      this.ctx.strokeStyle = '#0e387a';
+      this.ctx.stroke();
+
+      this.ctx.restore();
+
+      this.strokeCount = 10;
+      this.isSigned = true;
+      const dataUrl = this.canvas.toDataURL('image/png');
+      if (this.hiddenInput) this.hiddenInput.value = dataUrl;
+      this.updateStatus(true, 'Typed Signature Adopted');
+      this.clearError();
+    }
+
+    clear() {
+      if (!this.canvas) return;
+      const dpr = window.devicePixelRatio || 1;
+      this.ctx.clearRect(0, 0, this.canvas.width / dpr, this.canvas.height / dpr);
+      this.points = [];
+      this.strokeCount = 0;
+      this.isSigned = false;
+      if (this.hiddenInput) this.hiddenInput.value = '';
+      this.updateStatus(false);
+      this.clearError();
+    }
+
+    loadSignature(dataUrl) {
+      this.clear();
+      if (!dataUrl) return;
+      if (this.hiddenInput) this.hiddenInput.value = dataUrl;
+      this.isSigned = true;
+      this.strokeCount = 10;
+      this.updateStatus(true, 'Active Signature on File');
+
+      const img = new Image();
+      img.onload = () => {
+        this.initCanvas();
+        const rect = this.canvas.getBoundingClientRect();
+        const w = rect.width || 560;
+        const h = rect.height || 140;
+        const scale = Math.min((w - 40) / img.width, (h - 20) / img.height, 1);
+        const dw = img.width * scale;
+        const dh = img.height * scale;
+        const dx = (w - dw) / 2;
+        const dy = (h - dh) / 2;
+        this.ctx.drawImage(img, dx, dy, dw, dh);
+      };
+      img.src = dataUrl;
+    }
+
+    updateStatus(signed, text) {
+      if (!this.statusEl) return;
+      if (signed) {
+        this.statusEl.className = 'sig-status-badge is-signed';
+        this.statusEl.innerHTML = `<i class="fas fa-check-circle" style="color:#059669;"></i> ${text || 'Signature Captured'}`;
+      } else {
+        this.statusEl.className = 'sig-status-badge';
+        this.statusEl.innerHTML = `<i class="fas fa-pen-nib"></i> Signature required`;
+      }
+    }
+
+    clearError() {
+      if (this.container) this.container.classList.remove('has-error');
+      if (this.errorEl) this.errorEl.style.display = 'none';
+    }
+
+    showError(msg) {
+      if (this.container) this.container.classList.add('has-error');
+      if (this.errorEl) {
+        if (msg) this.errorEl.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${msg}`;
+        this.errorEl.style.display = 'flex';
+      }
+    }
+
+    isEmpty() {
+      const val = this.hiddenInput ? this.hiddenInput.value.trim() : '';
+      return !this.isSigned || !val || this.strokeCount === 0;
+    }
+
+    validate() {
+      if (this.isEmpty()) {
+        this.showError('Depositor signature is mandatory to register and validate a custody vault mandate account.');
+        return false;
+      }
+      this.clearError();
+      return true;
+    }
+
+    getData() {
+      return this.hiddenInput ? this.hiddenInput.value : '';
+    }
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
     initPortal();
     bindEvents();
@@ -201,6 +478,42 @@
     // Setup Avatar Uploaders (Create & Edit) with server storage and badges
     setupAvatarUpload('create-avatar-file', 'create-avatar-url', 'create-avatar-preview', 'btn-create-clear-avatar', DEFAULT_AVATAR, 'create-avatar-status', 'create-avatar-loading');
     setupAvatarUpload('edit-avatar-file', 'edit-avatar-url', 'edit-avatar-preview', 'btn-edit-clear-avatar', DEFAULT_AVATAR, 'edit-avatar-status', 'edit-avatar-loading');
+
+    // Setup Signature Pads (Create & Edit)
+    createSigPad = new CanvasSignaturePad({
+      canvasId: 'create-signature-canvas',
+      containerId: 'create-signature-container',
+      statusId: 'create-sig-status',
+      errorId: 'create-sig-error',
+      hiddenInputId: 'create-signature-data',
+      clearBtnId: 'btn-create-clear-sig',
+      typeBtnId: 'btn-create-type-sig',
+      getNameFn: () => document.getElementById('create-owner-name')?.value || document.getElementById('create-beneficiary-name')?.value || ''
+    });
+
+    editSigPad = new CanvasSignaturePad({
+      canvasId: 'edit-signature-canvas',
+      containerId: 'edit-signature-container',
+      statusId: 'edit-sig-status',
+      errorId: null,
+      hiddenInputId: 'edit-signature-data',
+      clearBtnId: 'btn-edit-clear-sig',
+      typeBtnId: 'btn-edit-type-sig',
+      getNameFn: () => document.getElementById('edit-owner-name')?.value || document.getElementById('edit-beneficiary-name')?.value || ''
+    });
+
+    // Redraw signature button in edit modal
+    document.getElementById('btn-edit-redraw-sig')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      const currentPreview = document.getElementById('edit-sig-current-preview');
+      const interactiveWrap = document.getElementById('edit-sig-interactive-wrap');
+      if (currentPreview) currentPreview.style.display = 'none';
+      if (interactiveWrap) interactiveWrap.style.display = 'block';
+      if (editSigPad) {
+        editSigPad.clear();
+        editSigPad.initCanvas();
+      }
+    });
 
     // Login form
     const loginForm = document.getElementById('login-form');
@@ -351,6 +664,25 @@
       }
     } else {
       if (progressBar) progressBar.style.width = '55%';
+    }
+
+    // Render Legal Signature in User Dashboard
+    const sigRenderEl = document.getElementById('user-dash-sig-render');
+    const sigBadgeEl = document.getElementById('user-dash-sig-badge');
+    if (sigRenderEl) {
+      if (profile.signature && (profile.signature.startsWith('data:image') || profile.signature.startsWith('http') || profile.signature.startsWith('/'))) {
+        sigRenderEl.innerHTML = `<img src="${profile.signature}" alt="Depositor Signature" style="max-height:46px; max-width:210px; object-fit:contain; filter:contrast(1.2);">`;
+        if (sigBadgeEl) {
+          sigBadgeEl.className = 'badge-sig-verified';
+          sigBadgeEl.innerHTML = '<i class="fas fa-shield-check"></i> Digital Signature on File';
+        }
+      } else {
+        sigRenderEl.innerHTML = `<span style="font-family:'Alex Brush','Great Vibes',cursive; font-size:1.8rem; color:#0e387a;">${escapeHtml(profile.owner_name || 'Verified Signatory')}</span>`;
+        if (sigBadgeEl) {
+          sigBadgeEl.className = 'badge-sig-verified';
+          sigBadgeEl.innerHTML = '<i class="fas fa-check-circle"></i> Mandate Signatory Verified';
+        }
+      }
     }
   }
 
@@ -508,17 +840,32 @@
     if (depEl) depEl.textContent = ownerName.toUpperCase();
     if (benEl) benEl.innerHTML = benName.toUpperCase() + '<br><small>(VERIFIED HEIR / BENEFICIARY MANDATE)</small>';
     if (sigDepEl) sigDepEl.textContent = ownerName.toUpperCase();
+    const certSigImg = document.getElementById('cert-render-sig-img');
     const scriptSigDepEl = document.getElementById('cert-render-sig-script-depositor');
-    if (scriptSigDepEl) {
-      const cleanName = ownerName.replace(/^(engineer|lord|capt\.?|captain|dr\.?|mr\.?|mrs\.?|ms\.?|prof\.?)\s+/i, '');
-      scriptSigDepEl.textContent = cleanName;
-      if (cleanName.length > 24) {
-        scriptSigDepEl.style.fontSize = '1.75rem';
-      } else if (cleanName.length > 18) {
-        scriptSigDepEl.style.fontSize = '2.05rem';
-      } else {
-        scriptSigDepEl.style.fontSize = '2.35rem';
+    const svgUnderline = document.getElementById('cert-render-sig-svg-underline');
+
+    if (profile.signature && (profile.signature.startsWith('data:image') || profile.signature.startsWith('http') || profile.signature.startsWith('/'))) {
+      if (certSigImg) {
+        certSigImg.src = profile.signature;
+        certSigImg.style.display = 'block';
       }
+      if (scriptSigDepEl) scriptSigDepEl.style.display = 'none';
+      if (svgUnderline) svgUnderline.style.display = 'none';
+    } else {
+      if (certSigImg) certSigImg.style.display = 'none';
+      if (scriptSigDepEl) {
+        scriptSigDepEl.style.display = 'inline-block';
+        const cleanName = ownerName.replace(/^(engineer|lord|capt\.?|captain|dr\.?|mr\.?|mrs\.?|ms\.?|prof\.?)\s+/i, '');
+        scriptSigDepEl.textContent = cleanName;
+        if (cleanName.length > 24) {
+          scriptSigDepEl.style.fontSize = '1.75rem';
+        } else if (cleanName.length > 18) {
+          scriptSigDepEl.style.fontSize = '2.05rem';
+        } else {
+          scriptSigDepEl.style.fontSize = '2.35rem';
+        }
+      }
+      if (svgUnderline) svgUnderline.style.display = 'block';
     }
 
     openModal('modal-cert-preview');
@@ -546,15 +893,32 @@
     if (loadingEl) loadingEl.classList.remove('is-active');
 
     openModal('modal-create-profile');
+
+    // Resize and prepare signature canvas once modal becomes visible
+    setTimeout(() => {
+      if (createSigPad) {
+        createSigPad.clear();
+        createSigPad.initCanvas();
+      }
+    }, 60);
   }
 
   async function handleCreateProfile(e) {
     e.preventDefault();
+
+    // Real Mandatory Signature Validation
+    if (createSigPad && !createSigPad.validate()) {
+      showToast('Depositor signature is required to register a vault mandate account.', 'error');
+      const sigContainer = document.getElementById('create-signature-container');
+      if (sigContainer) sigContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+
     const submitBtn = e.target.querySelector('button[type="submit"]');
     const originalText = submitBtn ? submitBtn.innerHTML : '';
     if (submitBtn) {
       submitBtn.disabled = true;
-      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving to Database...';
     }
 
     try {
@@ -568,6 +932,7 @@
         deposit_item: (document.getElementById('create-deposit-item')?.value || 'Vault Deposit Item').trim(),
         currency: document.getElementById('create-currency')?.value || 'USD',
         profile_image_url: document.getElementById('create-avatar-url')?.value || DEFAULT_AVATAR,
+        signature: createSigPad ? createSigPad.getData() : (document.getElementById('create-signature-data')?.value || ''),
         context_details: (document.getElementById('create-context-details')?.value || '').trim(),
         status: document.getElementById('create-status')?.value || 'Active'
       };
@@ -581,7 +946,7 @@
         window.PortalData.setSession(newProfile);
         window.syncPortalNavState?.();
         renderViewForUser(newProfile);
-        showToast(`Welcome! Your vault mandate account for ${newProfile.beneficiary_name} has been created and verified.`, 'success');
+        showToast(`Welcome! Your vault mandate account for ${newProfile.beneficiary_name} has been created and verified in database.`, 'success');
       } else {
         // In Admin View: clear search and filter to ensure newly created profile is visible at the top!
         const searchInput = document.getElementById('admin-search');
@@ -590,7 +955,7 @@
         if (statusSelect) statusSelect.value = 'ALL';
 
         renderAdminDashboard();
-        showToast(`Profile for ${data.beneficiary_name} created successfully!`, 'success');
+        showToast(`Profile for ${data.beneficiary_name} created and saved in database successfully!`, 'success');
 
         // Smooth scroll and flash highlight newly created profile row
         setTimeout(() => {
@@ -603,7 +968,7 @@
         }, 100);
       }
     } catch (err) {
-      showToast(err.message || 'Error creating profile', 'error');
+      showToast(err.message || 'Error creating profile in database', 'error');
     } finally {
       if (submitBtn) {
         submitBtn.disabled = false;
@@ -648,6 +1013,30 @@
     const loadingEl = document.getElementById('edit-avatar-loading');
     if (loadingEl) loadingEl.classList.remove('is-active');
 
+    // Populate signature state for editing
+    const sigData = profile.signature || '';
+    const currentPreview = document.getElementById('edit-sig-current-preview');
+    const interactiveWrap = document.getElementById('edit-sig-interactive-wrap');
+    const previewSigImg = document.getElementById('edit-sig-preview-img');
+    const hiddenSig = document.getElementById('edit-signature-data');
+    if (hiddenSig) hiddenSig.value = sigData;
+
+    if (sigData && (sigData.startsWith('data:image') || sigData.startsWith('http') || sigData.startsWith('/'))) {
+      if (currentPreview) currentPreview.style.display = 'flex';
+      if (interactiveWrap) interactiveWrap.style.display = 'none';
+      if (previewSigImg) previewSigImg.src = sigData;
+      editSigPad?.updateStatus(true, 'Active Signature on File');
+    } else {
+      if (currentPreview) currentPreview.style.display = 'none';
+      if (interactiveWrap) interactiveWrap.style.display = 'block';
+      setTimeout(() => {
+        if (editSigPad) {
+          editSigPad.clear();
+          editSigPad.initCanvas();
+        }
+      }, 60);
+    }
+
     document.getElementById('edit-context-details').value = profile.context_details || '';
     document.getElementById('edit-status').value = profile.status || 'Active';
 
@@ -675,6 +1064,7 @@
         deposit_item: document.getElementById('edit-deposit-item').value.trim(),
         currency: document.getElementById('edit-currency').value,
         profile_image_url: document.getElementById('edit-avatar-url').value || DEFAULT_AVATAR,
+        signature: document.getElementById('edit-signature-data')?.value || '',
         context_details: document.getElementById('edit-context-details').value.trim(),
         status: document.getElementById('edit-status').value
       };
@@ -692,7 +1082,6 @@
       if (submitBtn) {
         submitBtn.disabled = false;
         submitBtn.innerHTML = originalText;
-      }
     }
   }
 

@@ -28,6 +28,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     deposit_item TEXT NOT NULL,
     currency TEXT NOT NULL DEFAULT 'USD',
     profile_image_url TEXT,
+    signature TEXT,
     context_details TEXT,
     security_code TEXT,
     transaction_code TEXT,

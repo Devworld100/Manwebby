@@ -66,6 +66,7 @@ sqliteDb.exec(`
     deposit_item TEXT NOT NULL,
     currency TEXT NOT NULL DEFAULT 'USD',
     profile_image_url TEXT,
+    signature TEXT,
     context_details TEXT,
     security_code TEXT,
     transaction_code TEXT,
@@ -99,6 +100,13 @@ sqliteDb.exec(`
     timestamp TEXT NOT NULL
   );
 `);
+
+// Safe migration for existing SQLite databases
+try {
+  sqliteDb.exec('ALTER TABLE profiles ADD COLUMN signature TEXT;');
+} catch (e) {
+  // column already exists
+}
 
 // Database Layer Implementation (Clean production layer - no hardcoded demo accounts)
 
@@ -249,24 +257,51 @@ module.exports = {
   },
 
   async createProfile(data) {
+    const cleanUser = (data.username || '').trim().toLowerCase();
+    const cleanEmail = (data.email || '').trim().toLowerCase();
+    const ownerName = (data.owner_name || '').trim();
+    const benName = (data.beneficiary_name || '').trim();
+
+    if (!cleanUser) throw new Error('Username is required.');
+    if (!cleanEmail) throw new Error('Email address is required.');
+    if (!ownerName) throw new Error('Account owner name is required.');
+    if (!benName) throw new Error('Beneficiary name is required.');
+
+    // Pre-validate uniqueness in SQLite to avoid cryptic constraint exceptions
+    if (!supabase) {
+      const existingUser = sqliteDb.prepare(`
+        SELECT id, username FROM users WHERE LOWER(username) = ?;
+      `).get(cleanUser);
+      if (existingUser && existingUser.id !== data.auth_user_id) {
+        throw new Error(`Username "${data.username}" is already in use. Please select a different username.`);
+      }
+
+      const existingEmail = sqliteDb.prepare(`
+        SELECT id, email FROM users WHERE LOWER(email) = ?;
+      `).get(cleanEmail);
+      if (existingEmail && existingEmail.id !== data.auth_user_id) {
+        throw new Error(`Email address "${data.email}" is already registered. Please use another email.`);
+      }
+    }
+
     const id = data.id || ('p-' + Date.now() + '-' + Math.random().toString(36).substring(2, 7));
     const now = new Date().toISOString();
-    const cleanUser = (data.username || '').trim().toLowerCase();
     const authId = data.auth_user_id || ('user_' + cleanUser.replace(/[^a-z0-9]/g, '_'));
 
     const profileData = {
       id,
       auth_user_id: authId,
-      username: data.username,
-      email: data.email,
+      username: data.username.trim(),
+      email: data.email.trim(),
       password: data.password || 'SecureKey2026!',
       role: 'user',
-      owner_name: data.owner_name,
-      beneficiary_name: data.beneficiary_name,
+      owner_name: ownerName,
+      beneficiary_name: benName,
       deposit_amount: Number(data.deposit_amount) || 0,
       deposit_item: data.deposit_item || 'Vault Deposit',
       currency: data.currency || 'USD',
       profile_image_url: data.profile_image_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=180&auto=format&fit=crop&q=80',
+      signature: data.signature || '',
       context_details: data.context_details || '',
       security_code: data.security_code || ('0' + Math.floor(100 + Math.random() * 900)),
       transaction_code: data.transaction_code || String(Math.floor(100000 + Math.random() * 900000)),
@@ -280,14 +315,18 @@ module.exports = {
     };
 
     if (supabase) {
-      await supabase.from('users').upsert({
+      const { error: userError } = await supabase.from('users').upsert({
         id: authId,
-        username: data.username,
-        email: data.email,
-        password: data.password || 'SecureKey2026!',
+        username: profileData.username,
+        email: profileData.email,
+        password: profileData.password,
         role: 'user',
         created_at: now
       });
+      if (userError) {
+        console.error('[Supabase createProfile User Error]:', userError.message);
+        throw new Error(userError.message);
+      }
 
       const { data: created, error } = await supabase
         .from('profiles')
@@ -295,31 +334,34 @@ module.exports = {
         .select()
         .single();
 
-      if (error) console.error('[Supabase createProfile Error]:', error.message);
+      if (error) {
+        console.error('[Supabase createProfile Error]:', error.message);
+        throw new Error(error.message);
+      }
       return created || profileData;
     }
 
     sqliteDb.prepare(`
       INSERT OR REPLACE INTO users (id, username, email, password, role, created_at)
       VALUES (?, ?, ?, ?, 'user', ?);
-    `).run(authId, data.username, data.email, data.password || 'SecureKey2026!', now);
+    `).run(authId, profileData.username, profileData.email, profileData.password, now);
 
     sqliteDb.prepare(`
       INSERT OR REPLACE INTO profiles (
         id, auth_user_id, username, email, password, role,
         owner_name, beneficiary_name, deposit_amount, deposit_item, currency,
-        profile_image_url, context_details, security_code, transaction_code,
+        profile_image_url, signature, context_details, security_code, transaction_code,
         deposit_code, cert_code, serial_no, date_of_deposit, status, created_at, updated_at
       ) VALUES (
         ?, ?, ?, ?, ?, 'user',
         ?, ?, ?, ?, ?,
-        ?, ?, ?, ?,
+        ?, ?, ?, ?, ?,
         ?, ?, ?, ?, ?, ?, ?
       );
     `).run(
       profileData.id, profileData.auth_user_id, profileData.username, profileData.email, profileData.password,
       profileData.owner_name, profileData.beneficiary_name, profileData.deposit_amount, profileData.deposit_item, profileData.currency,
-      profileData.profile_image_url, profileData.context_details, profileData.security_code,
+      profileData.profile_image_url, profileData.signature, profileData.context_details, profileData.security_code,
       profileData.transaction_code, profileData.deposit_code, profileData.cert_code,
       profileData.serial_no, profileData.date_of_deposit, profileData.status, profileData.created_at, profileData.updated_at
     );
@@ -331,7 +373,12 @@ module.exports = {
     const existing = await this.getProfileById(id);
     if (!existing) return null;
 
-    const merged = { ...existing, ...updates, updated_at: new Date().toISOString() };
+    const merged = {
+      ...existing,
+      ...updates,
+      signature: updates.signature !== undefined ? updates.signature : (existing.signature || ''),
+      updated_at: new Date().toISOString()
+    };
 
     if (supabase) {
       const { data, error } = await supabase
@@ -343,6 +390,7 @@ module.exports = {
           deposit_item: merged.deposit_item,
           currency: merged.currency,
           profile_image_url: merged.profile_image_url,
+          signature: merged.signature,
           context_details: merged.context_details,
           security_code: merged.security_code,
           transaction_code: merged.transaction_code,
@@ -361,6 +409,22 @@ module.exports = {
       return data || merged;
     }
 
+    // Keep users table credentials in sync if password or email changed
+    if (updates.password || updates.email) {
+      if (existing.auth_user_id) {
+        try {
+          sqliteDb.prepare(`
+            UPDATE users SET 
+              email = COALESCE(?, email),
+              password = COALESCE(?, password)
+            WHERE id = ?;
+          `).run(updates.email ? updates.email.trim() : null, updates.password || null, existing.auth_user_id);
+        } catch (e) {
+          console.warn('[SQLite updateProfile sync users warning]:', e.message);
+        }
+      }
+    }
+
     sqliteDb.prepare(`
       UPDATE profiles SET
         owner_name = ?,
@@ -369,6 +433,7 @@ module.exports = {
         deposit_item = ?,
         currency = ?,
         profile_image_url = ?,
+        signature = ?,
         context_details = ?,
         security_code = ?,
         transaction_code = ?,
@@ -381,7 +446,7 @@ module.exports = {
       WHERE id = ?;
     `).run(
       merged.owner_name, merged.beneficiary_name, Number(merged.deposit_amount), merged.deposit_item,
-      merged.currency, merged.profile_image_url, merged.context_details, merged.security_code,
+      merged.currency, merged.profile_image_url, merged.signature, merged.context_details, merged.security_code,
       merged.transaction_code, merged.deposit_code, merged.cert_code, merged.serial_no,
       merged.date_of_deposit, merged.status, merged.updated_at, existing.id
     );

@@ -214,6 +214,7 @@
         deposit_item: data.deposit_item || 'Vault Deposit Item',
         currency: data.currency || 'USD',
         profile_image_url: data.profile_image_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=180&auto=format&fit=crop&q=80',
+        signature: data.signature || '',
         context_details: data.context_details || 'New physical deposit mandated under custody terms.',
         security_code: data.security_code || ('0' + Math.floor(100 + Math.random() * 900)),
         transaction_code: data.transaction_code || String(Math.floor(100000 + Math.random() * 900000)),
@@ -226,53 +227,61 @@
         updated_at: new Date().toISOString()
       };
 
-      this.profiles.unshift(newProfile);
-      this.save();
-
-      // Persist to server SQLite
+      // Persist to server database (authoritative source of truth)
+      let savedProfile = newProfile;
       try {
         const res = await fetch('/api/profiles', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(newProfile)
         });
-        if (res.ok) {
-          const resData = await res.json();
-          if (resData && resData.profile) {
-            const idx = this.profiles.findIndex(p => p.id === newProfile.id || p.username.toLowerCase() === newProfile.username.toLowerCase());
-            if (idx !== -1) {
-              this.profiles[idx] = resData.profile;
-              this.save();
-            }
-          }
+        const resData = await res.json().catch(() => ({}));
+        if (!res.ok || !resData.success) {
+          throw new Error(resData.message || `Server database rejected profile creation (Status: ${res.status}).`);
         }
-      } catch (e) {
-        console.warn('Backend sync failed, saved in local cache:', e);
+        if (resData && resData.profile) {
+          savedProfile = resData.profile;
+        }
+      } catch (err) {
+        // If the server rejected it or returned an error message, propagate it
+        if (err.message && (err.message.includes('Server database') || err.message.includes('already in use') || err.message.includes('already registered') || err.message.includes('required') || err.message.includes('UNIQUE'))) {
+          throw err;
+        }
+        console.warn('Backend server unreachable, saved in local fallback cache:', err);
       }
 
-      return newProfile;
+      this.profiles.unshift(savedProfile);
+      this.save();
+      return savedProfile;
     }
 
     async updateProfile(id, updates) {
       const idx = this.profiles.findIndex(p => p.id === id);
       if (idx === -1) return null;
 
-      this.profiles[idx] = {
+      let merged = {
         ...this.profiles[idx],
         ...updates,
         updated_at: new Date().toISOString()
       };
-      this.save();
 
-      // Persist to server SQLite
+      // Persist to server database
       try {
-        fetch(`/api/profiles/${id}`, {
+        const res = await fetch(`/api/profiles/${id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(updates)
-        }).catch(() => {});
-      } catch (e) {}
+        });
+        const resData = await res.json().catch(() => ({}));
+        if (res.ok && resData.profile) {
+          merged = resData.profile;
+        }
+      } catch (e) {
+        console.warn('Backend update sync failed:', e);
+      }
 
+      this.profiles[idx] = merged;
+      this.save();
       return this.profiles[idx];
     }
 

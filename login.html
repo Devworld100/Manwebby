@@ -342,6 +342,17 @@
             <div class="data-box__label"><i class="fas fa-coins"></i> Deposit Amount / Asset Value</div>
             <div class="data-box__value data-box__value--amount" id="user-dash-amount">-</div>
           </div>
+
+          <!-- Bound Depositor Legal Signature -->
+          <div class="data-box" style="grid-column: 1 / -1;">
+            <div class="data-box__label" style="display:flex; justify-content:space-between; align-items:center;">
+              <span><i class="fas fa-signature text-gold" style="color:var(--portal-gold);"></i> Verified Depositor Legal Signature</span>
+              <span id="user-dash-sig-badge" class="badge-sig-verified"><i class="fas fa-shield-check"></i> Digital Signature on File</span>
+            </div>
+            <div class="data-box__value" id="user-dash-sig-wrap" style="padding-top:0.35rem; display:flex; align-items:center; min-height:48px;">
+              <div id="user-dash-sig-render" style="display:flex; align-items:center;">-</div>
+            </div>
+          </div>
         </div>
 
         <!-- Bound Context / Detail Description Block -->
@@ -528,6 +539,41 @@
             </div>
           </div>
 
+          <!-- Depositor / Client Legal Signature Space -->
+          <div class="form-group signature-form-group">
+            <label style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
+              <span><i class="fas fa-signature" style="color:var(--portal-gold); margin-right:6px;"></i> Depositor / Client Legal Signature <span class="text-danger" style="color:var(--portal-red); font-weight:900;">*</span></span>
+              <span class="sig-status-badge" id="create-sig-status"><i class="fas fa-pen-nib"></i> Signature required</span>
+            </label>
+            <div class="signature-pad-container" id="create-signature-container">
+              <div class="signature-canvas-wrap">
+                <canvas id="create-signature-canvas" class="signature-canvas"></canvas>
+                <div class="signature-baseline-guide" id="create-sig-guide">
+                  <span>X</span>
+                  <div class="sig-guide-line"></div>
+                  <small>Sign above this line</small>
+                </div>
+              </div>
+              <div class="signature-actions-row">
+                <div class="signature-tools">
+                  <button type="button" class="btn btn--xs btn--outline" id="btn-create-clear-sig">
+                    <i class="fas fa-eraser"></i> Clear Pad
+                  </button>
+                  <button type="button" class="btn btn--xs btn--outline" id="btn-create-type-sig">
+                    <i class="fas fa-font"></i> Adopt Typed Signature
+                  </button>
+                </div>
+                <div class="signature-hint">
+                  <i class="fas fa-lock text-gold" style="color:var(--portal-gold);"></i> Draw via mouse, pen, or touch. Saved &amp; validated on official Certificate.
+                </div>
+              </div>
+              <div class="signature-error" id="create-sig-error" style="display:none;">
+                <i class="fas fa-exclamation-circle"></i> Depositor signature is required to register and validate a custody vault mandate account.
+              </div>
+            </div>
+            <input type="hidden" id="create-signature-data" value="">
+          </div>
+
           <div class="form-group">
             <label for="create-context-details">Context / Detail Description *</label>
             <textarea id="create-context-details" required placeholder="Account background details, Certificate of Deposit codes, custody remarks..." style="height:80px;"></textarea>
@@ -635,6 +681,52 @@
                 <div class="avatar-upload-hint"><i class="fas fa-cloud-arrow-up text-gold" style="color:var(--portal-gold); margin-right:4px;"></i> Click to browse or drag &amp; drop a new photo. Saves securely to server.</div>
               </div>
             </div>
+          </div>
+
+          <!-- Depositor / Client Legal Signature Space for Edit -->
+          <div class="form-group signature-form-group">
+            <label style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
+              <span><i class="fas fa-signature" style="color:var(--portal-gold); margin-right:6px;"></i> Depositor / Client Legal Signature</span>
+              <span class="sig-status-badge" id="edit-sig-status"><i class="fas fa-check-circle"></i> Signature on File</span>
+            </label>
+            <div class="signature-pad-container" id="edit-signature-container">
+              <!-- Current signature image preview if already signed -->
+              <div id="edit-sig-current-preview" class="sig-current-preview" style="display:none;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                  <img id="edit-sig-preview-img" src="" alt="Depositor Signature on File" style="max-height:55px; max-width:220px; object-fit:contain; filter:contrast(1.2);">
+                  <span style="font-size:0.75rem; color:#059669; font-weight:700;"><i class="fas fa-shield-check"></i> Active Signature</span>
+                </div>
+                <button type="button" class="btn btn--xs btn--outline" id="btn-edit-redraw-sig" style="color:#d97706; border-color:#fcd34d;">
+                  <i class="fas fa-pen"></i> Redraw Signature
+                </button>
+              </div>
+
+              <!-- Interactive signature pad for re-drawing / updating -->
+              <div id="edit-sig-interactive-wrap">
+                <div class="signature-canvas-wrap">
+                  <canvas id="edit-signature-canvas" class="signature-canvas"></canvas>
+                  <div class="signature-baseline-guide" id="edit-sig-guide">
+                    <span>X</span>
+                    <div class="sig-guide-line"></div>
+                    <small>Sign above this line</small>
+                  </div>
+                </div>
+                <div class="signature-actions-row">
+                  <div class="signature-tools">
+                    <button type="button" class="btn btn--xs btn--outline" id="btn-edit-clear-sig">
+                      <i class="fas fa-eraser"></i> Clear Pad
+                    </button>
+                    <button type="button" class="btn btn--xs btn--outline" id="btn-edit-type-sig">
+                      <i class="fas fa-font"></i> Adopt Typed Signature
+                    </button>
+                  </div>
+                  <div class="signature-hint">
+                    <i class="fas fa-pen-nib text-gold" style="color:var(--portal-gold);"></i> Draw with mouse or touch. Leave unchanged to retain existing.
+                  </div>
+                </div>
+              </div>
+            </div>
+            <input type="hidden" id="edit-signature-data" value="">
           </div>
 
           <div class="form-group">
@@ -810,11 +902,15 @@
             <!-- Depositor Signature (BLUE EXECUTIVE INK) -->
             <div class="cert-sig-line cert-sig-other">
               <div class="cert-handwritten-wrap">
-                <div class="cert-sig-real-depositor" style="position:relative; width:220px; height:58px; display:flex; align-items:center; justify-content:center;">
+                <div class="cert-sig-real-depositor" id="cert-depositor-sig-container" style="position:relative; width:220px; height:58px; display:flex; align-items:center; justify-content:center;">
+                  <!-- Real signature image when on file -->
+                  <img id="cert-render-sig-img" class="cert-real-signature-img" src="" alt="Depositor Signature" style="display:none;">
+
+                  <!-- Cursive script fallback -->
                   <span id="cert-render-sig-script-depositor" style="font-family:'Alex Brush', 'Great Vibes', cursive; font-size:2.35rem; color:#0e387a; font-weight:700; transform:rotate(-2.5deg); letter-spacing:0.5px; text-shadow:0 0 1px rgba(14,56,122,0.3); display:inline-block; mix-blend-mode:multiply; white-space:nowrap; max-width:215px; overflow:visible;">
                     Depositor Signature
                   </span>
-                  <svg viewBox="0 0 220 32" style="position:absolute; bottom:-3px; left:10px; width:200px; height:24px; pointer-events:none;" aria-hidden="true">
+                  <svg id="cert-render-sig-svg-underline" viewBox="0 0 220 32" style="position:absolute; bottom:-3px; left:10px; width:200px; height:24px; pointer-events:none;" aria-hidden="true">
                     <path d="M 15 8 C 65 24, 145 18, 198 10 C 208 8, 214 11, 208 15 C 180 25, 105 25, 35 20" fill="none" stroke="#0e387a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" opacity="0.88"/>
                     <path d="M 40 15 C 80 20, 150 16, 188 12" fill="none" stroke="#0e387a" stroke-width="0.9" stroke-linecap="round" opacity="0.6"/>
                   </svg>
@@ -928,8 +1024,8 @@
   </footer>
 
   <script src="js/main.js"></script>
-  <script src="js/portal-data.js?v=5"></script>
-  <script src="js/portal-nav.js?v=8"></script>
-  <script src="js/portal.js?v=5"></script>
+  <script src="js/portal-data.js?v=9"></script>
+  <script src="js/portal-nav.js?v=9"></script>
+  <script src="js/portal.js?v=9"></script>
 </body>
 </html>

@@ -128,6 +128,7 @@ async function handleApiRequest(req, res, pathname) {
       sendJson(res, 201, { success: true, profile });
       return true;
     } catch (err) {
+      console.error('[API Create Profile Error]:', err.message);
       sendJson(res, 400, { success: false, message: err.message });
       return true;
     }
