@@ -577,7 +577,10 @@
     const res = await window.PortalData.authenticate(identifier, password);
     if (res.success) {
       currentUser = res.user;
-      showToast(`Welcome back, ${res.user.beneficiary_name || res.user.owner_name}!`, 'success');
+      const displayName = res.user.role === 'admin'
+        ? 'Administrator'
+        : (res.user.beneficiary_name || res.user.owner_name || res.user.username || 'Client');
+      showToast(`Welcome back, ${displayName}!`, 'success');
       window.syncPortalNavState?.();
       renderViewForUser(currentUser);
     } else {
@@ -609,13 +612,14 @@
       if (backBtn) backBtn.style.display = 'none';
       document.getElementById('view-admin-portal').style.display = 'none';
       document.getElementById('view-user-dashboard').style.display = 'block';
-      renderUserDashboard(user.id);
+      renderUserDashboard(user.id || user.auth_user_id);
     }
   }
 
   // --- Protected User Dashboard Component ---
   function renderUserDashboard(profileId) {
-    const profile = window.PortalData.getProfileById(profileId);
+    const profile = window.PortalData.getProfileById(profileId) || 
+      (currentUser && (currentUser.id === profileId || currentUser.auth_user_id === profileId || currentUser.username) ? currentUser : null);
     if (!profile) return;
 
     // Bound Data Fields

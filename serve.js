@@ -524,5 +524,5 @@ setInterval(() => {
 
 server.listen(PORT, async () => {
   console.log(`Server running at http://localhost:${PORT}/ (${db.getEngineName()})`);
-  await db.ensureAdminUser();
+  await db.ensureSeedData();
 });

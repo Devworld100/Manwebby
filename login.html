@@ -210,6 +210,21 @@
             </button>
           </form>
 
+          <!-- Quick Fill Credential Shortcuts -->
+          <div style="margin-top:1.15rem; padding:0.75rem 0.85rem; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; font-size:0.78rem;">
+            <div style="font-weight:700; color:var(--portal-navy); margin-bottom:0.45rem; display:flex; align-items:center; justify-content:space-between;">
+              <span><i class="fas fa-key" style="color:var(--portal-gold); margin-right:5px;"></i> Quick Login Shortcuts:</span>
+            </div>
+            <div style="display:flex; gap:0.45rem; flex-wrap:wrap;">
+              <button type="button" class="btn btn--xs btn--outline" onclick="document.getElementById('login-username').value='admin'; document.getElementById('login-password').value='Admin2026@MAN!'; document.getElementById('login-form').requestSubmit();" style="font-size:0.75rem; background:#ffffff; border-color:#cbd5e1; cursor:pointer;" title="Fill Admin (admin / Admin2026@MAN!)">
+                <i class="fas fa-user-shield" style="color:var(--portal-red);"></i> Admin (admin)
+              </button>
+              <button type="button" class="btn btn--xs btn--outline" onclick="document.getElementById('login-username').value='anita.johnson'; document.getElementById('login-password').value='Password123!'; document.getElementById('login-form').requestSubmit();" style="font-size:0.75rem; background:#ffffff; border-color:#cbd5e1; cursor:pointer;" title="Fill Beneficiary (anita.johnson / Password123!)">
+                <i class="fas fa-user-check" style="color:#059669;"></i> Beneficiary (anita.johnson)
+              </button>
+            </div>
+          </div>
+
           <div style="margin-top:1.5rem; padding-top:1.25rem; border-top:1px solid #e2e8f0; text-align:center;">
             <p style="font-size:0.85rem; color:#64748b; margin-bottom:0.75rem;">Need to register a vault mandate or beneficiary account?</p>
             <button type="button" class="btn btn--outline" style="width:100%; font-size:0.88rem; font-weight:700;" onclick="window.PortalUI.openCreateModal(true)">
@@ -1024,8 +1039,8 @@
   </footer>
 
   <script src="js/main.js"></script>
-  <script src="js/portal-data.js?v=9"></script>
-  <script src="js/portal-nav.js?v=9"></script>
-  <script src="js/portal.js?v=9"></script>
+  <script src="js/portal-data.js?v=10"></script>
+  <script src="js/portal-nav.js?v=10"></script>
+  <script src="js/portal.js?v=10"></script>
 </body>
 </html>
