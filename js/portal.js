@@ -1143,6 +1143,7 @@
       if (submitBtn) {
         submitBtn.disabled = false;
         submitBtn.innerHTML = originalText;
+      }
     }
   }
 
