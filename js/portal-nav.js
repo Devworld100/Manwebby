@@ -84,8 +84,12 @@
     return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
 
-  document.addEventListener('DOMContentLoaded', syncNavAuthState);
   window.syncPortalNavState = syncNavAuthState;
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', syncNavAuthState);
+  } else {
+    syncNavAuthState();
+  }
 
   /* Keep the public navigation aligned with the site's real information
      architecture.  The detail screen is shared so every menu item has a
@@ -207,6 +211,10 @@
     });
   }
 
-  document.addEventListener('DOMContentLoaded', connectDetailLinks);
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', connectDetailLinks);
+  } else {
+    connectDetailLinks();
+  }
 
 })(window, document);

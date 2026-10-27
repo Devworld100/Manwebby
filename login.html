@@ -194,18 +194,18 @@
 
           <div id="login-error-alert" style="display:none; padding:0.75rem 1rem; background:#fee2e2; border:1px solid #fca5a5; color:#991b1b; border-radius:6px; font-size:0.85rem; margin-bottom:1.25rem;"></div>
 
-          <form id="login-form">
+          <form id="login-form" action="javascript:void(0);" method="POST" onsubmit="event.preventDefault(); if(window.PortalUI && window.PortalUI.handleLogin){ window.PortalUI.handleLogin(event); } return false;">
             <div class="form-group" style="margin-bottom:1.25rem;">
               <label for="login-username" style="font-size:0.85rem; font-weight:700; color:var(--portal-navy); display:block; margin-bottom:0.35rem;">Username or Email Address *</label>
-              <input type="text" id="login-username" class="admin-search-input" style="width:100%;" required placeholder="Enter username or email">
+              <input type="text" id="login-username" name="username" autocomplete="username" class="admin-search-input" style="width:100%;" required placeholder="Enter username or email">
             </div>
 
             <div class="form-group" style="margin-bottom:1.5rem;">
               <label for="login-password" style="font-size:0.85rem; font-weight:700; color:var(--portal-navy); display:block; margin-bottom:0.35rem;">Password *</label>
-              <input type="password" id="login-password" class="admin-search-input" style="width:100%;" required placeholder="Enter password">
+              <input type="password" id="login-password" name="password" autocomplete="current-password" class="admin-search-input" style="width:100%;" required placeholder="Enter password">
             </div>
 
-            <button type="submit" class="btn btn--primary btn--lg" style="width:100%; font-weight:800;">
+            <button type="submit" id="btn-login-submit" class="btn btn--primary btn--lg" style="width:100%; font-weight:800;">
               <i class="fas fa-sign-in-alt"></i> Login
             </button>
           </form>
@@ -1024,8 +1024,8 @@
   </footer>
 
   <script src="js/main.js"></script>
-  <script src="js/portal-data.js?v=11"></script>
-  <script src="js/portal-nav.js?v=11"></script>
-  <script src="js/portal.js?v=11"></script>
+  <script src="js/portal-data.js?v=12"></script>
+  <script src="js/portal-nav.js?v=12"></script>
+  <script src="js/portal.js?v=12"></script>
 </body>
 </html>

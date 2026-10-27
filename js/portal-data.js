@@ -181,11 +181,12 @@
         if (res.ok) {
           const data = await res.json();
           if (data && data.success && data.user) {
-            const userObj = data.user.profile || data.user;
+            const userObj = { ...(data.user.profile || {}), ...data.user };
             userObj.role = data.user.role;
             if (data.user.id && !userObj.id) userObj.id = data.user.id;
             this.setSession(userObj);
-            await this.syncFromServer();
+            // Sync profiles in background
+            this.syncFromServer().catch(() => {});
             return { success: true, user: userObj, role: data.user.role };
           }
         } else if (res.status === 401) {
@@ -476,21 +477,37 @@
       return true;
     }
 
-    calculateDemurrage(profile) {
-      const depositDate = profile.date_of_deposit ? new Date(profile.date_of_deposit) : new Date('2019-05-02');
+    calculateDemurrage(dateOrProfile, rate = 10.00, currency = 'USD') {
+      let depositDateStr = '2019-05-02';
+      let curr = currency || 'USD';
+      let dailyRate = Number(rate) || 10.00;
+
+      if (dateOrProfile && typeof dateOrProfile === 'object' && !(dateOrProfile instanceof Date)) {
+        depositDateStr = dateOrProfile.date_of_deposit || '2019-05-02';
+        curr = dateOrProfile.currency || curr;
+      } else if (typeof dateOrProfile === 'string' && dateOrProfile) {
+        depositDateStr = dateOrProfile;
+      } else if (dateOrProfile instanceof Date) {
+        depositDateStr = dateOrProfile.toISOString();
+      }
+
+      const depositDate = new Date(depositDateStr);
+      const validDate = isNaN(depositDate.getTime()) ? new Date('2019-05-02') : depositDate;
       const now = new Date();
-      const diffTime = Math.abs(now - depositDate);
+      const diffTime = Math.max(0, now - validDate);
       const diffDays = Math.max(1, Math.floor(diffTime / (1000 * 60 * 60 * 24)));
-      const dailyRate = 10.00;
       const totalAccrued = diffDays * dailyRate;
+      const symbol = (curr === 'GBP') ? '£' : ((curr === 'EUR') ? '€' : '$');
 
       return {
-        depositDate,
+        depositDate: validDate,
         days: diffDays,
-        dailyRate: 10.00,
+        dailyRate: dailyRate,
+        symbol: symbol,
+        currency: curr,
         total: totalAccrued,
-        formattedTotal: '$' + totalAccrued.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
-        depositDateFormatted: depositDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+        formattedTotal: symbol + totalAccrued.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+        depositDateFormatted: validDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
       };
     }
   }

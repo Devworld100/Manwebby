@@ -460,10 +460,22 @@
     }
   }
 
-  document.addEventListener('DOMContentLoaded', () => {
+  // Clean up trailing '?' if arriving from native GET submission
+  if (window.location.search === '?' || (window.location.search === '' && window.location.href.endsWith('?'))) {
+    try {
+      window.history.replaceState({}, document.title, window.location.pathname);
+    } catch (e) {}
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      initPortal();
+      bindEvents();
+    });
+  } else {
     initPortal();
     bindEvents();
-  });
+  }
 
   function initPortal() {
     currentUser = window.PortalData.getSession();
@@ -475,32 +487,69 @@
   }
 
   function bindEvents() {
-    // Setup Avatar Uploaders (Create & Edit) with server storage and badges
-    setupAvatarUpload('create-avatar-file', 'create-avatar-url', 'create-avatar-preview', 'btn-create-clear-avatar', DEFAULT_AVATAR, 'create-avatar-status', 'create-avatar-loading');
-    setupAvatarUpload('edit-avatar-file', 'edit-avatar-url', 'edit-avatar-preview', 'btn-edit-clear-avatar', DEFAULT_AVATAR, 'edit-avatar-status', 'edit-avatar-loading');
+    // 1. Bind Login form FIRST to ensure authentication always works regardless of sub-components
+    const loginForm = document.getElementById('login-form');
+    if (loginForm) {
+      loginForm.addEventListener('submit', handleLogin);
+    }
 
-    // Setup Signature Pads (Create & Edit)
-    createSigPad = new CanvasSignaturePad({
-      canvasId: 'create-signature-canvas',
-      containerId: 'create-signature-container',
-      statusId: 'create-sig-status',
-      errorId: 'create-sig-error',
-      hiddenInputId: 'create-signature-data',
-      clearBtnId: 'btn-create-clear-sig',
-      typeBtnId: 'btn-create-type-sig',
-      getNameFn: () => document.getElementById('create-owner-name')?.value || document.getElementById('create-beneficiary-name')?.value || ''
+    // 2. Logout buttons
+    document.querySelectorAll('.btn-portal-logout').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        window.PortalData.logout();
+        currentUser = null;
+        showLoginView();
+        showToast('Logged out successfully.', 'info');
+      });
     });
 
-    editSigPad = new CanvasSignaturePad({
-      canvasId: 'edit-signature-canvas',
-      containerId: 'edit-signature-container',
-      statusId: 'edit-sig-status',
-      errorId: null,
-      hiddenInputId: 'edit-signature-data',
-      clearBtnId: 'btn-edit-clear-sig',
-      typeBtnId: 'btn-edit-type-sig',
-      getNameFn: () => document.getElementById('edit-owner-name')?.value || document.getElementById('edit-beneficiary-name')?.value || ''
+    // 3. Admin Search & Filters
+    const searchInput = document.getElementById('admin-search');
+    const statusSelect = document.getElementById('admin-status-select');
+
+    searchInput?.addEventListener('input', () => {
+      renderAdminTable();
     });
+
+    statusSelect?.addEventListener('change', () => {
+      renderAdminTable();
+    });
+
+    // 4. Setup Avatar Uploaders (wrapped in try-catch)
+    try {
+      setupAvatarUpload('create-avatar-file', 'create-avatar-url', 'create-avatar-preview', 'btn-create-clear-avatar', DEFAULT_AVATAR, 'create-avatar-status', 'create-avatar-loading');
+      setupAvatarUpload('edit-avatar-file', 'edit-avatar-url', 'edit-avatar-preview', 'btn-edit-clear-avatar', DEFAULT_AVATAR, 'edit-avatar-status', 'edit-avatar-loading');
+    } catch (err) {
+      console.warn('Avatar uploader setup failed:', err);
+    }
+
+    // 5. Setup Signature Pads (wrapped in try-catch)
+    try {
+      createSigPad = new CanvasSignaturePad({
+        canvasId: 'create-signature-canvas',
+        containerId: 'create-signature-container',
+        statusId: 'create-sig-status',
+        errorId: 'create-sig-error',
+        hiddenInputId: 'create-signature-data',
+        clearBtnId: 'btn-create-clear-sig',
+        typeBtnId: 'btn-create-type-sig',
+        getNameFn: () => document.getElementById('create-owner-name')?.value || document.getElementById('create-beneficiary-name')?.value || ''
+      });
+
+      editSigPad = new CanvasSignaturePad({
+        canvasId: 'edit-signature-canvas',
+        containerId: 'edit-signature-container',
+        statusId: 'edit-sig-status',
+        errorId: null,
+        hiddenInputId: 'edit-signature-data',
+        clearBtnId: 'btn-edit-clear-sig',
+        typeBtnId: 'btn-edit-type-sig',
+        getNameFn: () => document.getElementById('edit-owner-name')?.value || document.getElementById('edit-beneficiary-name')?.value || ''
+      });
+    } catch (err) {
+      console.warn('Signature pad setup failed:', err);
+    }
 
     // Redraw signature button in edit modal
     document.getElementById('btn-edit-redraw-sig')?.addEventListener('click', (e) => {
@@ -513,33 +562,6 @@
         editSigPad.clear();
         editSigPad.initCanvas();
       }
-    });
-
-    // Login form
-    const loginForm = document.getElementById('login-form');
-    loginForm?.addEventListener('submit', handleLogin);
-
-
-    // Logout buttons
-    document.querySelectorAll('.btn-portal-logout').forEach(btn => {
-      btn.addEventListener('click', () => {
-        window.PortalData.logout();
-        currentUser = null;
-        showLoginView();
-        showToast('Logged out successfully.', 'info');
-      });
-    });
-
-    // Admin Search & Filters
-    const searchInput = document.getElementById('admin-search');
-    const statusSelect = document.getElementById('admin-status-select');
-
-    searchInput?.addEventListener('input', () => {
-      renderAdminTable();
-    });
-
-    statusSelect?.addEventListener('change', () => {
-      renderAdminTable();
     });
 
     // Create Profile Form
@@ -568,27 +590,62 @@
 
   async function handleLogin(e) {
     if (e && e.preventDefault) e.preventDefault();
-    const identifier = document.getElementById('login-username')?.value || '';
-    const password = document.getElementById('login-password')?.value || '';
+    if (e && e.stopPropagation) e.stopPropagation();
+
+    const usernameInput = document.getElementById('login-username');
+    const passwordInput = document.getElementById('login-password');
+    const identifier = (usernameInput?.value || '').trim();
+    const password = (passwordInput?.value || '').trim();
     const errBox = document.getElementById('login-error-alert');
+    const submitBtn = document.getElementById('btn-login-submit') || document.querySelector('#login-form button[type="submit"]');
 
-    if (errBox) errBox.style.display = 'none';
+    if (errBox) {
+      errBox.style.display = 'none';
+      errBox.textContent = '';
+    }
 
-    const res = await window.PortalData.authenticate(identifier, password);
-    if (res.success) {
-      currentUser = res.user;
-      const displayName = res.user.role === 'admin'
-        ? 'Administrator'
-        : (res.user.beneficiary_name || res.user.owner_name || res.user.username || 'Client');
-      showToast(`Welcome back, ${displayName}!`, 'success');
-      window.syncPortalNavState?.();
-      renderViewForUser(currentUser);
-    } else {
+    if (!identifier || !password) {
       if (errBox) {
-        errBox.textContent = res.message;
+        errBox.textContent = 'Please enter your username or email address and password.';
         errBox.style.display = 'block';
       }
-      showToast(res.message, 'error');
+      return;
+    }
+
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Authenticating...';
+    }
+
+    try {
+      const res = await window.PortalData.authenticate(identifier, password);
+      if (res.success) {
+        currentUser = res.user;
+        const displayName = res.user.role === 'admin'
+          ? 'Administrator'
+          : (res.user.beneficiary_name || res.user.owner_name || res.user.username || 'Client');
+        showToast(`Welcome back, ${displayName}!`, 'success');
+        window.syncPortalNavState?.();
+        renderViewForUser(currentUser);
+      } else {
+        if (errBox) {
+          errBox.textContent = res.message || 'Invalid username/email or password.';
+          errBox.style.display = 'block';
+        }
+        showToast(res.message || 'Invalid credentials.', 'error');
+      }
+    } catch (err) {
+      console.error('Login error:', err);
+      if (errBox) {
+        errBox.textContent = 'A connection error occurred. Please try again.';
+        errBox.style.display = 'block';
+      }
+      showToast('Authentication error. Please try again.', 'error');
+    } finally {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Login';
+      }
     }
   }
 
@@ -1205,6 +1262,7 @@
   }
 
   window.PortalUI = {
+    handleLogin,
     previewDashboard,
     openCreateModal,
     openEditModal,

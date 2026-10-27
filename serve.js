@@ -377,7 +377,7 @@ const server = http.createServer(async (req, res) => {
       res.writeHead(304, {
         'ETag': etag,
         'Access-Control-Allow-Origin': '*',
-        'Cache-Control': isStaticAsset ? 'public, max-age=604800, stale-while-revalidate=86400' : 'public, max-age=0, must-revalidate'
+        'Cache-Control': (/portal/i.test(path.basename(filePath))) ? 'public, max-age=0, must-revalidate' : (isStaticAsset ? 'public, max-age=604800, stale-while-revalidate=86400' : 'public, max-age=0, must-revalidate')
       });
       res.end();
       return;
@@ -441,9 +441,12 @@ const server = http.createServer(async (req, res) => {
     const acceptEncoding = req.headers['accept-encoding'] || '';
     const canGzip = isCompressible && acceptEncoding.includes('gzip') && stats.size > 256;
 
-    const cacheHeader = isStaticAsset 
-      ? 'public, max-age=604800, stale-while-revalidate=86400' 
-      : 'public, max-age=0, must-revalidate';
+    const isPortalScript = /portal/i.test(path.basename(filePath));
+    const cacheHeader = isPortalScript
+      ? 'public, max-age=0, must-revalidate'
+      : (isStaticAsset 
+        ? 'public, max-age=604800, stale-while-revalidate=86400' 
+        : 'public, max-age=0, must-revalidate');
 
     if (canGzip) {
       let cached = staticGzipCache.get(filePath);
