@@ -74,6 +74,17 @@ sqliteDb.exec(`
     cert_code TEXT,
     serial_no TEXT,
     date_of_deposit TEXT,
+    days_in_custody REAL,
+    daily_rate REAL DEFAULT 10.00,
+    purpose_of_deposit TEXT DEFAULT 'SAFE KEEPING',
+    cert_remarks TEXT,
+    manager_name TEXT DEFAULT 'IAIN MCCALLISTER',
+    manager_title TEXT DEFAULT '(GENERAL MANAGER & CEO)',
+    manager_signature TEXT,
+    seal_text TEXT DEFAULT 'OFFICIAL\nVAULT SEAL\n★ 1993 ★',
+    company_address TEXT,
+    cert_title TEXT DEFAULT 'CERTIFICATE OF DEPOSIT',
+    beneficiary_mandate_text TEXT,
     status TEXT NOT NULL DEFAULT 'Active',
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL
@@ -101,12 +112,36 @@ sqliteDb.exec(`
   );
 `);
 
-// Safe migration for existing SQLite databases
-try {
-  sqliteDb.exec('ALTER TABLE profiles ADD COLUMN signature TEXT;');
-} catch (e) {
-  // column already exists
+// Safe migrations for existing SQLite databases
+const profileMigrations = [
+  'ALTER TABLE profiles ADD COLUMN signature TEXT;',
+  'ALTER TABLE profiles ADD COLUMN days_in_custody REAL;',
+  'ALTER TABLE profiles ADD COLUMN daily_rate REAL DEFAULT 10.00;',
+  'ALTER TABLE profiles ADD COLUMN purpose_of_deposit TEXT DEFAULT "SAFE KEEPING";',
+  'ALTER TABLE profiles ADD COLUMN cert_remarks TEXT;',
+  'ALTER TABLE profiles ADD COLUMN manager_name TEXT DEFAULT "IAIN MCCALLISTER";',
+  'ALTER TABLE profiles ADD COLUMN manager_title TEXT DEFAULT "(GENERAL MANAGER & CEO)";',
+  'ALTER TABLE profiles ADD COLUMN manager_signature TEXT;',
+  'ALTER TABLE profiles ADD COLUMN seal_text TEXT;',
+  'ALTER TABLE profiles ADD COLUMN company_address TEXT;',
+  'ALTER TABLE profiles ADD COLUMN cert_title TEXT DEFAULT "CERTIFICATE OF DEPOSIT";',
+  'ALTER TABLE profiles ADD COLUMN beneficiary_mandate_text TEXT;'
+];
+
+for (const sql of profileMigrations) {
+  try {
+    sqliteDb.exec(sql);
+  } catch (e) {
+    // column already exists
+  }
 }
+
+// Convert all currencies to USD and remove fake AI SVG signatures
+try {
+  sqliteDb.exec("UPDATE profiles SET currency = 'USD' WHERE currency != 'USD';");
+  sqliteDb.exec("UPDATE profiles SET signature = '' WHERE signature LIKE 'data:image/svg+xml%';");
+  sqliteDb.exec("UPDATE profiles SET days_in_custody = 2669, daily_rate = 10.00 WHERE (username = 'anita.johnson' OR auth_user_id = 'user_anita_johnson') AND (days_in_custody IS NULL OR days_in_custody = 0);");
+} catch (e) {}
 
 const SEED_PROFILES = [
   {
@@ -122,7 +157,7 @@ const SEED_PROFILES = [
     deposit_item: 'GOLD (490Kilos)',
     currency: 'USD',
     profile_image_url: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=180&auto=format&fit=crop&q=80',
-    signature: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="90" viewBox="0 0 300 90"><path d="M22 55 C 28 25, 40 22, 48 36 C 54 48, 48 68, 56 65 C 68 60, 75 35, 84 42 C 90 50, 86 64, 98 62 C 108 58, 116 42, 124 45 C 134 50, 140 64, 150 60 C 162 55, 172 36, 182 40 C 192 44, 198 62, 210 58 C 224 55, 240 36, 255 42 C 268 48, 278 62, 290 60" fill="none" stroke="%231d4ed8" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M30 68 C 85 62, 180 65, 290 62" fill="none" stroke="%231d4ed8" stroke-width="1.8" stroke-linecap="round" opacity="0.85"/></svg>',
+    signature: '',
     context_details: 'Certificate of Deposit Code: 316SJ17 | Security Code: 0147 | Transaction Code: 529138 | Deposit Code: 198308MZL14 | Serial No: 01479040198308. Consignment deposited on 2nd May 2019 under Safe Keeping protocol at Solihull Vault facility. Mandate clause: In the absence of the Depositor only the next of Kin or the Beneficiary (Anita Johnson & to whom it may concern) has the mandate to claim the consignment with at least two (2) days notification prior to collection. Demurrage rate: US $10.00 / day. Signatories: Iain McCallister (General Manager & CEO) & Engineer Steven Johnson (Depositor).',
     security_code: '0147',
     transaction_code: '529138',
@@ -130,6 +165,17 @@ const SEED_PROFILES = [
     cert_code: '316SJ17',
     serial_no: '01479040198308',
     date_of_deposit: '2019-05-02',
+    days_in_custody: 2669,
+    daily_rate: 10.00,
+    purpose_of_deposit: 'SAFE KEEPING',
+    cert_remarks: 'Remarks in the absence of the Depositor only the next of Kin or the Beneficiary has the mandate to claim the consignment with at least two (2) days notification prior to the collection and the balance would be calculated and pay on the date of collection.\n\nReceived with full proof of ownership.',
+    manager_name: 'IAIN MCCALLISTER',
+    manager_title: '(GENERAL MANAGER & CEO)',
+    manager_signature: '',
+    seal_text: 'OFFICIAL\nVAULT SEAL\n★ 1993 ★',
+    company_address: '5 Highlands Rd, Cranmore Ave, Shirley,\nSolihull B90 4LE,\nUnited Kingdom',
+    cert_title: 'CERTIFICATE OF DEPOSIT',
+    beneficiary_mandate_text: 'ANITA JOHNSON & TO WHOM IT MAY CONCERN\n(MALE GENDER)',
     status: 'Active',
     created_at: '2019-05-02T10:00:00Z',
     updated_at: new Date().toISOString()
@@ -145,9 +191,9 @@ const SEED_PROFILES = [
     beneficiary_name: 'Marcus Vance',
     deposit_amount: 4200000,
     deposit_item: 'Sovereign Bonds & Title Deeds',
-    currency: 'GBP',
+    currency: 'USD',
     profile_image_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=180&auto=format&fit=crop&q=80',
-    signature: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="90" viewBox="0 0 300 90"><path d="M25 50 C 35 20, 45 65, 55 25 C 65 60, 75 30, 85 55 C 100 45, 120 40, 150 45 C 180 50, 210 35, 240 40" fill="none" stroke="%231d4ed8" stroke-width="2.5" stroke-linecap="round"/></svg>',
+    signature: '',
     context_details: 'Certificate of Deposit Code: 482VA21 | Security Code: 0288 | Deposit Code: 202109VNC02. Consignment contains bearer instruments and certified UK sovereign bonds deposited for custody on 14th Sept 2021. High Court Probate granted naming Marcus Vance as sole designated claimant.',
     security_code: '0288',
     transaction_code: '614920',
@@ -155,6 +201,17 @@ const SEED_PROFILES = [
     cert_code: '482VA21',
     serial_no: '02881940192881',
     date_of_deposit: '2021-09-14',
+    days_in_custody: 1870,
+    daily_rate: 10.00,
+    purpose_of_deposit: 'SAFE KEEPING',
+    cert_remarks: 'Remarks in the absence of the Depositor only the next of Kin or the Beneficiary has the mandate to claim the consignment with at least two (2) days notification prior to the collection and the balance would be calculated and pay on the date of collection.\n\nReceived with full proof of ownership.',
+    manager_name: 'IAIN MCCALLISTER',
+    manager_title: '(GENERAL MANAGER & CEO)',
+    manager_signature: '',
+    seal_text: 'OFFICIAL\nVAULT SEAL\n★ 1993 ★',
+    company_address: '5 Highlands Rd, Cranmore Ave, Shirley,\nSolihull B90 4LE,\nUnited Kingdom',
+    cert_title: 'CERTIFICATE OF DEPOSIT',
+    beneficiary_mandate_text: 'MARCUS VANCE\n(VERIFIED HEIR / BENEFICIARY MANDATE)',
     status: 'Active',
     created_at: '2021-09-14T11:30:00Z',
     updated_at: new Date().toISOString()
@@ -172,7 +229,7 @@ const SEED_PROFILES = [
     deposit_item: 'Rough & Cut Diamonds (1,250 Carats)',
     currency: 'USD',
     profile_image_url: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=180&auto=format&fit=crop&q=80',
-    signature: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="90" viewBox="0 0 300 90"><path d="M30 45 C 50 20, 60 70, 80 35 C 100 65, 130 30, 160 50 C 190 35, 230 45, 270 40" fill="none" stroke="%231d4ed8" stroke-width="2.5" stroke-linecap="round"/></svg>',
+    signature: '',
     context_details: 'Certificate of Deposit Code: 591CH22 | Security Code: 0359 | Deposit Code: 202211CHN03. GIA certified gemstone parcel locked in Solihull High-Security Safe 4B. Beneficiary mandate verified under international probate convention.',
     security_code: '0359',
     transaction_code: '782341',
@@ -180,6 +237,17 @@ const SEED_PROFILES = [
     cert_code: '591CH22',
     serial_no: '03590123849102',
     date_of_deposit: '2022-11-20',
+    days_in_custody: 1438,
+    daily_rate: 10.00,
+    purpose_of_deposit: 'SAFE KEEPING',
+    cert_remarks: 'Remarks in the absence of the Depositor only the next of Kin or the Beneficiary has the mandate to claim the consignment with at least two (2) days notification prior to the collection and the balance would be calculated and pay on the date of collection.\n\nReceived with full proof of ownership.',
+    manager_name: 'IAIN MCCALLISTER',
+    manager_title: '(GENERAL MANAGER & CEO)',
+    manager_signature: '',
+    seal_text: 'OFFICIAL\nVAULT SEAL\n★ 1993 ★',
+    company_address: '5 Highlands Rd, Cranmore Ave, Shirley,\nSolihull B90 4LE,\nUnited Kingdom',
+    cert_title: 'CERTIFICATE OF DEPOSIT',
+    beneficiary_mandate_text: 'DR. SOPHIA CHEN\n(VERIFIED HEIR / BENEFICIARY MANDATE)',
     status: 'Active',
     created_at: '2022-11-20T09:00:00Z',
     updated_at: new Date().toISOString()
@@ -195,9 +263,9 @@ const SEED_PROFILES = [
     beneficiary_name: 'Estate Trustee (Pending Heir Kinship)',
     deposit_amount: 3100000,
     deposit_item: 'Rare Numismatic Coins & Charter Deeds',
-    currency: 'GBP',
+    currency: 'USD',
     profile_image_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=180&auto=format&fit=crop&q=80',
-    signature: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="90" viewBox="0 0 300 90"><path d="M20 50 Q 80 20, 140 45 T 260 40" fill="none" stroke="%231d4ed8" stroke-width="2.5" stroke-linecap="round"/></svg>',
+    signature: '',
     context_details: 'Certificate of Deposit Code: 604HR23 | Security Code: 0412 | Deposit Code: 202304HRG04. Account created with preliminary estate representation. Ready for dynamic administrator reassignment once direct heir kinship is confirmed by High Court Probate.',
     security_code: '0412',
     transaction_code: '905182',
@@ -205,6 +273,17 @@ const SEED_PROFILES = [
     cert_code: '604HR23',
     serial_no: '04128910492819',
     date_of_deposit: '2023-04-10',
+    days_in_custody: 1297,
+    daily_rate: 10.00,
+    purpose_of_deposit: 'SAFE KEEPING',
+    cert_remarks: 'Remarks in the absence of the Depositor only the next of Kin or the Beneficiary has the mandate to claim the consignment with at least two (2) days notification prior to the collection and the balance would be calculated and pay on the date of collection.\n\nReceived with full proof of ownership.',
+    manager_name: 'IAIN MCCALLISTER',
+    manager_title: '(GENERAL MANAGER & CEO)',
+    manager_signature: '',
+    seal_text: 'OFFICIAL\nVAULT SEAL\n★ 1993 ★',
+    company_address: '5 Highlands Rd, Cranmore Ave, Shirley,\nSolihull B90 4LE,\nUnited Kingdom',
+    cert_title: 'CERTIFICATE OF DEPOSIT',
+    beneficiary_mandate_text: 'ESTATE TRUSTEE\n(PENDING HEIR KINSHIP PROBATE)',
     status: 'Pending',
     created_at: '2023-04-10T14:15:00Z',
     updated_at: new Date().toISOString()
@@ -586,7 +665,7 @@ module.exports = {
       beneficiary_name: benName,
       deposit_amount: Number(data.deposit_amount) || 0,
       deposit_item: data.deposit_item || 'Vault Deposit',
-      currency: data.currency || 'USD',
+      currency: 'USD',
       profile_image_url: data.profile_image_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=180&auto=format&fit=crop&q=80',
       signature: data.signature || '',
       context_details: data.context_details || '',
@@ -596,6 +675,17 @@ module.exports = {
       cert_code: data.cert_code || (Math.floor(100 + Math.random() * 900) + 'MC' + Math.floor(10 + Math.random() * 90)),
       serial_no: data.serial_no || ('0147' + Math.floor(1000000000 + Math.random() * 9000000000)),
       date_of_deposit: data.date_of_deposit || now.split('T')[0],
+      days_in_custody: (data.days_in_custody !== undefined && data.days_in_custody !== null && data.days_in_custody !== '') ? Number(data.days_in_custody) : null,
+      daily_rate: (data.daily_rate !== undefined && data.daily_rate !== null && data.daily_rate !== '') ? Number(data.daily_rate) : 10.00,
+      purpose_of_deposit: data.purpose_of_deposit || 'SAFE KEEPING',
+      cert_remarks: data.cert_remarks || '',
+      manager_name: data.manager_name || 'IAIN MCCALLISTER',
+      manager_title: data.manager_title || '(GENERAL MANAGER & CEO)',
+      manager_signature: data.manager_signature || '',
+      seal_text: data.seal_text || 'OFFICIAL\nVAULT SEAL\n★ 1993 ★',
+      company_address: data.company_address || '',
+      cert_title: data.cert_title || 'CERTIFICATE OF DEPOSIT',
+      beneficiary_mandate_text: data.beneficiary_mandate_text || '',
       status: data.status || 'Active',
       created_at: data.created_at || now,
       updated_at: now
@@ -653,19 +743,28 @@ module.exports = {
         id, auth_user_id, username, email, password, role,
         owner_name, beneficiary_name, deposit_amount, deposit_item, currency,
         profile_image_url, signature, context_details, security_code, transaction_code,
-        deposit_code, cert_code, serial_no, date_of_deposit, status, created_at, updated_at
+        deposit_code, cert_code, serial_no, date_of_deposit, days_in_custody, daily_rate,
+        purpose_of_deposit, cert_remarks, manager_name, manager_title, manager_signature,
+        seal_text, company_address, cert_title, beneficiary_mandate_text,
+        status, created_at, updated_at
       ) VALUES (
         ?, ?, ?, ?, ?, 'user',
         ?, ?, ?, ?, ?,
         ?, ?, ?, ?, ?,
-        ?, ?, ?, ?, ?, ?, ?
+        ?, ?, ?, ?, ?, ?,
+        ?, ?, ?, ?, ?,
+        ?, ?, ?, ?,
+        ?, ?, ?
       );
     `).run(
       profileData.id, profileData.auth_user_id, profileData.username, profileData.email, profileData.password,
       profileData.owner_name, profileData.beneficiary_name, profileData.deposit_amount, profileData.deposit_item, profileData.currency,
       profileData.profile_image_url, profileData.signature, profileData.context_details, profileData.security_code,
       profileData.transaction_code, profileData.deposit_code, profileData.cert_code,
-      profileData.serial_no, profileData.date_of_deposit, profileData.status, profileData.created_at, profileData.updated_at
+      profileData.serial_no, profileData.date_of_deposit, profileData.days_in_custody, profileData.daily_rate,
+      profileData.purpose_of_deposit, profileData.cert_remarks, profileData.manager_name, profileData.manager_title, profileData.manager_signature,
+      profileData.seal_text, profileData.company_address, profileData.cert_title, profileData.beneficiary_mandate_text,
+      profileData.status, profileData.created_at, profileData.updated_at
     );
 
     return this.getProfileById(id);
@@ -678,6 +777,7 @@ module.exports = {
     const merged = {
       ...existing,
       ...updates,
+      currency: 'USD',
       signature: updates.signature !== undefined ? updates.signature : (existing.signature || ''),
       updated_at: new Date().toISOString()
     };
@@ -690,7 +790,7 @@ module.exports = {
           beneficiary_name: merged.beneficiary_name,
           deposit_amount: Number(merged.deposit_amount),
           deposit_item: merged.deposit_item,
-          currency: merged.currency,
+          currency: 'USD',
           profile_image_url: merged.profile_image_url,
           signature: merged.signature,
           context_details: merged.context_details,
@@ -700,6 +800,17 @@ module.exports = {
           cert_code: merged.cert_code,
           serial_no: merged.serial_no,
           date_of_deposit: merged.date_of_deposit,
+          days_in_custody: (merged.days_in_custody !== undefined && merged.days_in_custody !== null && merged.days_in_custody !== '') ? Number(merged.days_in_custody) : null,
+          daily_rate: (merged.daily_rate !== undefined && merged.daily_rate !== null && merged.daily_rate !== '') ? Number(merged.daily_rate) : 10.00,
+          purpose_of_deposit: merged.purpose_of_deposit || 'SAFE KEEPING',
+          cert_remarks: merged.cert_remarks || '',
+          manager_name: merged.manager_name || 'IAIN MCCALLISTER',
+          manager_title: merged.manager_title || '(GENERAL MANAGER & CEO)',
+          manager_signature: merged.manager_signature || '',
+          seal_text: merged.seal_text || 'OFFICIAL\nVAULT SEAL\n★ 1993 ★',
+          company_address: merged.company_address || '',
+          cert_title: merged.cert_title || 'CERTIFICATE OF DEPOSIT',
+          beneficiary_mandate_text: merged.beneficiary_mandate_text || '',
           status: merged.status,
           updated_at: merged.updated_at
         })
@@ -743,14 +854,37 @@ module.exports = {
         cert_code = ?,
         serial_no = ?,
         date_of_deposit = ?,
+        days_in_custody = ?,
+        daily_rate = ?,
+        purpose_of_deposit = ?,
+        cert_remarks = ?,
+        manager_name = ?,
+        manager_title = ?,
+        manager_signature = ?,
+        seal_text = ?,
+        company_address = ?,
+        cert_title = ?,
+        beneficiary_mandate_text = ?,
         status = ?,
         updated_at = ?
       WHERE id = ?;
     `).run(
       merged.owner_name, merged.beneficiary_name, Number(merged.deposit_amount), merged.deposit_item,
-      merged.currency, merged.profile_image_url, merged.signature, merged.context_details, merged.security_code,
+      'USD', merged.profile_image_url, merged.signature, merged.context_details, merged.security_code,
       merged.transaction_code, merged.deposit_code, merged.cert_code, merged.serial_no,
-      merged.date_of_deposit, merged.status, merged.updated_at, existing.id
+      merged.date_of_deposit,
+      (merged.days_in_custody !== undefined && merged.days_in_custody !== null && merged.days_in_custody !== '') ? Number(merged.days_in_custody) : null,
+      (merged.daily_rate !== undefined && merged.daily_rate !== null && merged.daily_rate !== '') ? Number(merged.daily_rate) : 10.00,
+      merged.purpose_of_deposit || 'SAFE KEEPING',
+      merged.cert_remarks || '',
+      merged.manager_name || 'IAIN MCCALLISTER',
+      merged.manager_title || '(GENERAL MANAGER & CEO)',
+      merged.manager_signature || '',
+      merged.seal_text || 'OFFICIAL\nVAULT SEAL\n★ 1993 ★',
+      merged.company_address || '',
+      merged.cert_title || 'CERTIFICATE OF DEPOSIT',
+      merged.beneficiary_mandate_text || '',
+      merged.status, merged.updated_at, existing.id
     );
 
     return this.getProfileById(id);

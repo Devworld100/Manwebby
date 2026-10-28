@@ -8,6 +8,7 @@
 
   let currentUser = null;
   let selectedProfileId = null;
+  let activeCertProfileId = null;
   let isCreatingFromLogin = false;
   let createSigPad = null;
   let editSigPad = null;
@@ -564,11 +565,108 @@
       }
     });
 
+    // Live Password Verification Check (Create / Register Profile)
+    const createPass = document.getElementById('create-password');
+    const createConfirm = document.getElementById('create-confirm-password');
+    const createMsg = document.getElementById('create-password-match-msg');
+
+    function checkCreatePasswordMatch() {
+      if (!createPass || !createConfirm || !createMsg) return;
+      const p1 = createPass.value;
+      const p2 = createConfirm.value;
+      if (!p1 && !p2) {
+        createMsg.style.display = 'none';
+        createConfirm.style.borderColor = '';
+        return;
+      }
+      if (p1.length < 6) {
+        createMsg.style.display = 'flex';
+        createMsg.className = 'password-match-invalid';
+        createMsg.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Password must be at least 6 characters.';
+        return;
+      }
+      if (p2.length > 0) {
+        createMsg.style.display = 'flex';
+        if (p1 === p2) {
+          createMsg.className = 'password-match-valid';
+          createMsg.innerHTML = '<i class="fas fa-check-circle"></i> Passwords match perfectly.';
+          createConfirm.style.borderColor = '#10b981';
+        } else {
+          createMsg.className = 'password-match-invalid';
+          createMsg.innerHTML = '<i class="fas fa-times-circle"></i> Passwords do not match.';
+          createConfirm.style.borderColor = '#ef4444';
+        }
+      } else {
+        createMsg.style.display = 'none';
+        createConfirm.style.borderColor = '';
+      }
+    }
+
+    createPass?.addEventListener('input', checkCreatePasswordMatch);
+    createConfirm?.addEventListener('input', checkCreatePasswordMatch);
+
+    // Live Password Verification Check (Edit Profile)
+    const editPass = document.getElementById('edit-password');
+    const editConfirm = document.getElementById('edit-confirm-password');
+    const editMsg = document.getElementById('edit-password-match-msg');
+
+    function checkEditPasswordMatch() {
+      if (!editPass || !editConfirm || !editMsg) return;
+      const p1 = editPass.value;
+      const p2 = editConfirm.value;
+      if (!p1 && !p2) {
+        editMsg.style.display = 'none';
+        editConfirm.style.borderColor = '';
+        return;
+      }
+      if (p1.length > 0 && p1.length < 6) {
+        editMsg.style.display = 'flex';
+        editMsg.className = 'password-match-invalid';
+        editMsg.innerHTML = '<i class="fas fa-exclamation-triangle"></i> New password must be at least 6 characters.';
+        return;
+      }
+      if (p2.length > 0 || p1.length > 0) {
+        editMsg.style.display = 'flex';
+        if (p1 === p2) {
+          editMsg.className = 'password-match-valid';
+          editMsg.innerHTML = '<i class="fas fa-check-circle"></i> New passwords match.';
+          editConfirm.style.borderColor = '#10b981';
+        } else {
+          editMsg.className = 'password-match-invalid';
+          editMsg.innerHTML = '<i class="fas fa-times-circle"></i> New passwords do not match.';
+          editConfirm.style.borderColor = '#ef4444';
+        }
+      }
+    }
+
+    editPass?.addEventListener('input', checkEditPasswordMatch);
+    editConfirm?.addEventListener('input', checkEditPasswordMatch);
+
     // Create Profile Form
     document.getElementById('create-profile-form')?.addEventListener('submit', handleCreateProfile);
 
     // Edit Profile Form
     document.getElementById('edit-profile-form')?.addEventListener('submit', handleEditProfile);
+
+    // Certificate Customizer Form Submit
+    document.getElementById('cert-edit-form')?.addEventListener('submit', handleSaveCert);
+
+    // Manager signature file upload in Cert Edit modal
+    document.getElementById('cert-edit-manager-sig-file')?.addEventListener('change', async (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      try {
+        const dataUrl = await compressImageFile(file, 400, 150, 0.9);
+        const hiddenSig = document.getElementById('cert-edit-manager-sig-data');
+        const previewWrap = document.getElementById('cert-edit-manager-sig-preview');
+        const img = document.getElementById('cert-edit-mgr-img');
+        if (hiddenSig) hiddenSig.value = dataUrl;
+        if (img) img.src = dataUrl;
+        if (previewWrap) previewWrap.style.display = 'flex';
+      } catch (err) {
+        showToast(err.message || 'Failed to process signature image', 'error');
+      }
+    });
 
     // Dynamic Reassignment Form
     document.getElementById('reassign-names-form')?.addEventListener('submit', handleReassignNames);
@@ -693,7 +791,7 @@
     if (beneficiaryEl) beneficiaryEl.textContent = profile.beneficiary_name || 'N/A';
     if (headerTitle) headerTitle.textContent = profile.beneficiary_name;
 
-    const formattedAmount = `${profile.currency === 'GBP' ? '£' : '$'}${(profile.deposit_amount || 0).toLocaleString()} (${profile.deposit_item || 'Consignment'})`;
+    const formattedAmount = `$${(profile.deposit_amount || 0).toLocaleString()} (${profile.deposit_item || 'Consignment'})`;
     if (amountEl) amountEl.textContent = formattedAmount;
 
     if (contextEl) contextEl.textContent = profile.context_details || 'No context details on record.';
@@ -702,8 +800,8 @@
       statusTag.className = `role-tag ${profile.status === 'Active' ? '' : 'bg-warning'}`;
     }
 
-    // Live Demurrage Accrual Calculation
-    const demurrage = window.PortalData.calculateDemurrage(profile.date_of_deposit || '2019-05-02', 10, profile.currency || 'USD');
+    // Live Demurrage Accrual Calculation (Uses custom days & daily rate if set by admin)
+    const demurrage = window.PortalData.calculateDemurrage(profile);
     const demDate = document.getElementById('demurrage-deposit-date');
     const demDays = document.getElementById('demurrage-days');
     const demRate = document.getElementById('demurrage-daily-rate');
@@ -738,7 +836,7 @@
           sigBadgeEl.innerHTML = '<i class="fas fa-shield-check"></i> Digital Signature on File';
         }
       } else {
-        sigRenderEl.innerHTML = `<span style="font-family:'Alex Brush','Great Vibes',cursive; font-size:1.8rem; color:#0e387a;">${escapeHtml(profile.owner_name || 'Verified Signatory')}</span>`;
+        sigRenderEl.innerHTML = `<div style="font-size:1.05rem; font-weight:700; color:#0e387a; letter-spacing:0.5px;">${escapeHtml(profile.owner_name || 'Verified Signatory')}</div>`;
         if (sigBadgeEl) {
           sigBadgeEl.className = 'badge-sig-verified';
           sigBadgeEl.innerHTML = '<i class="fas fa-check-circle"></i> Mandate Signatory Verified';
@@ -793,7 +891,7 @@
           <div style="font-size:0.72rem; color:#64748b;">Deposit Ref: ${escapeHtml(p.deposit_code || 'N/A')}</div>
         </td>
         <td>
-          <strong style="color:#047857;">${p.currency === 'GBP' ? '£' : '$'}${(p.deposit_amount || 0).toLocaleString()}</strong>
+          <strong style="color:#047857;">$${(p.deposit_amount || 0).toLocaleString()}</strong>
           <div style="font-size:0.75rem; color:#475569;">${escapeHtml(p.deposit_item)}</div>
         </td>
         <td>
@@ -812,8 +910,11 @@
             <button class="btn btn--sm btn--outline" onclick="window.PortalUI.openCertModal('${p.id}')" title="View Official Certificate" style="color:var(--portal-gold); border-color:var(--portal-gold);">
               <i class="fas fa-certificate"></i> Cert
             </button>
+            <button class="btn btn--sm btn--primary" onclick="window.PortalUI.openCertEditModal('${p.id}')" title="Customize Official Certificate (Admin Only)" style="padding:0.25rem 0.55rem; font-size:0.75rem; background:#059669; border-color:#059669;">
+              <i class="fas fa-edit"></i> Edit Cert
+            </button>
             <button class="btn btn--sm btn--outline" onclick="window.PortalUI.openEditModal('${p.id}')" title="Edit Profile">
-              <i class="fas fa-edit"></i>
+              <i class="fas fa-user-pen"></i> Edit
             </button>
             <button class="btn btn--sm btn--outline" onclick="window.PortalUI.openReassignModal('${p.id}')" title="Dynamic Reassignment of Names" style="color:#d97706; border-color:#fde68a; background:#fffbeb;">
               <i class="fas fa-arrows-rotate"></i> Reassign
@@ -856,11 +957,28 @@
 
   // --- Official Certificate of Deposit Modal Handler ---
   function openCertModal(profileId) {
-    const id = profileId || (currentUser ? currentUser.id : null);
+    const id = profileId || activeCertProfileId || (currentUser ? (currentUser.id || currentUser.auth_user_id) : null);
     const profile = id ? window.PortalData.getProfileById(id) : window.PortalData.profiles[0];
     if (!profile) return;
+    activeCertProfileId = profile.id;
 
-    // Bind fields matching the PDF Certificate
+    // Admin Authority check: only administrators can see and use Edit Certificate buttons
+    const isAdmin = Boolean(currentUser && currentUser.role === 'admin');
+    const btnEditOpen = document.getElementById('btn-cert-edit-open');
+    const btnEditFooter = document.getElementById('btn-cert-edit-footer');
+    if (btnEditOpen) btnEditOpen.style.display = isAdmin ? 'inline-flex' : 'none';
+    if (btnEditFooter) btnEditFooter.style.display = isAdmin ? 'inline-flex' : 'none';
+
+    // Header: Issuing Company Name & Solihull Vault Address
+    const compNameEl = document.getElementById('cert-render-company-name');
+    const compAddrEl = document.getElementById('cert-render-company-address');
+    const titleEl = document.getElementById('cert-render-title');
+
+    if (compNameEl) compNameEl.textContent = profile.company_name || 'MAN COMMERCIAL PROTECTION';
+    if (compAddrEl) compAddrEl.innerHTML = (profile.company_address || '5 Highlands Rd, Cranmore Ave, Shirley,\nSolihull B90 4LE,\nUnited Kingdom').replace(/\n/g, '<br>');
+    if (titleEl) titleEl.textContent = profile.cert_title || 'CERTIFICATE OF DEPOSIT';
+
+    // Official Tracking Codes
     const secEl = document.getElementById('cert-render-security');
     const txEl = document.getElementById('cert-render-transaction');
     const certCodeEl = document.getElementById('cert-render-cert-code');
@@ -871,7 +989,6 @@
     const purposeEl = document.getElementById('cert-render-purpose');
     const depEl = document.getElementById('cert-render-depositor');
     const benEl = document.getElementById('cert-render-beneficiary');
-    const sigDepEl = document.getElementById('cert-render-sig-depositor');
 
     if (secEl) secEl.textContent = profile.security_code || '0147';
     if (txEl) txEl.textContent = profile.transaction_code || '529138';
@@ -879,15 +996,22 @@
     if (depCodeEl) depCodeEl.textContent = profile.deposit_code || '198308MZL14';
     if (serialEl) serialEl.textContent = profile.serial_no || '01479040198308';
     if (itemsEl) itemsEl.textContent = profile.deposit_item || 'Vault Custody Consignment';
+
+    // Custom Date of Deposit
     if (dateEl) {
       if (profile.date_of_deposit) {
         try {
-          const d = new Date(profile.date_of_deposit);
-          const day = d.getDate();
-          const ord = (day === 1 || day === 21 || day === 31) ? 'st' : (day === 2 || day === 22) ? 'nd' : (day === 3 || day === 23) ? 'rd' : 'th';
-          const month = d.toLocaleString('en-GB', { month: 'long' });
-          const year = d.getFullYear();
-          dateEl.textContent = `${day}${ord} ${month}, ${year}`;
+          const parts = String(profile.date_of_deposit).split('-');
+          if (parts.length === 3) {
+            const d = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+            const day = d.getDate();
+            const ord = (day === 1 || day === 21 || day === 31) ? 'st' : (day === 2 || day === 22) ? 'nd' : (day === 3 || day === 23) ? 'rd' : 'th';
+            const month = d.toLocaleString('en-GB', { month: 'long' });
+            const year = d.getFullYear();
+            dateEl.textContent = `${day}${ord} ${month}, ${year}`;
+          } else {
+            dateEl.textContent = profile.date_of_deposit;
+          }
         } catch (e) {
           dateEl.textContent = profile.date_of_deposit;
         }
@@ -895,41 +1019,247 @@
         dateEl.textContent = '2nd May, 2019';
       }
     }
-    if (purposeEl) purposeEl.textContent = 'SAFE KEEPING';
+
+    if (purposeEl) purposeEl.textContent = profile.purpose_of_deposit || 'SAFE KEEPING';
+
     const ownerName = (profile.owner_name || 'Authorized Depositor').trim();
     const benName = (profile.beneficiary_name || 'Designated Beneficiary').trim();
+    const benMandate = profile.beneficiary_mandate_text || '(VERIFIED HEIR / BENEFICIARY MANDATE)';
+
     if (depEl) depEl.textContent = ownerName.toUpperCase();
-    if (benEl) benEl.innerHTML = benName.toUpperCase() + '<br><small>(VERIFIED HEIR / BENEFICIARY MANDATE)</small>';
-    if (sigDepEl) sigDepEl.textContent = ownerName.toUpperCase();
-    const certSigImg = document.getElementById('cert-render-sig-img');
-    const scriptSigDepEl = document.getElementById('cert-render-sig-script-depositor');
-    const svgUnderline = document.getElementById('cert-render-sig-svg-underline');
+    if (benEl) benEl.innerHTML = escapeHtml(benName.toUpperCase()) + `<br><small>${escapeHtml(benMandate)}</small>`;
+
+    // Legal Remarks & Proof Clause
+    const remarksEl = document.getElementById('cert-render-remarks-text');
+    const proofEl = document.getElementById('cert-render-proof-text');
+    if (remarksEl) remarksEl.textContent = profile.cert_remarks || 'Remarks in the absence of the Depositor only the next of Kin or the Beneficiary has the mandate to claim the consignment with at least two (2) days notification prior to the collection and the balance would be calculated and pay on the date of collection.';
+    if (proofEl) proofEl.innerHTML = `<u>${escapeHtml(profile.proof_clause || 'Received with full proof of ownership.')}</u>`;
+
+    // Mandated Demurrage Rate Box (USD Only)
+    const demRateBox = document.getElementById('cert-render-demurrage-box');
+    const dailyRate = (profile.daily_rate !== undefined && profile.daily_rate !== null && !isNaN(Number(profile.daily_rate)))
+      ? Number(profile.daily_rate).toFixed(2)
+      : '10.00';
+    if (demRateBox) {
+      if (profile.demurrage_notice_text) {
+        demRateBox.innerHTML = escapeHtml(profile.demurrage_notice_text).replace(/\n/g, '<br>');
+      } else {
+        demRateBox.innerHTML = `Demurrage charges attract a fee of US $${dailyRate}<br>per DAY`;
+      }
+    }
+
+    // Manager Signatory & Signature (No AI fake text; real image or clean dotted line)
+    const mgrNameEl = document.getElementById('cert-render-manager-name');
+    const mgrRoleEl = document.getElementById('cert-render-manager-role');
+    const mgrSigImg = document.getElementById('cert-render-manager-sig-img');
+    const mgrSigBlank = document.getElementById('cert-manager-sig-blank');
+
+    if (mgrNameEl) mgrNameEl.textContent = (profile.manager_name || 'IAIN MCCALLISTER').toUpperCase();
+    if (mgrRoleEl) mgrRoleEl.textContent = profile.manager_title || '(GENERAL MANAGER & CEO)';
+
+    if (profile.manager_signature && (profile.manager_signature.startsWith('data:image') || profile.manager_signature.startsWith('http') || profile.manager_signature.startsWith('/'))) {
+      if (mgrSigImg) {
+        mgrSigImg.src = profile.manager_signature;
+        mgrSigImg.style.display = 'block';
+      }
+      if (mgrSigBlank) mgrSigBlank.style.display = 'none';
+    } else {
+      if (mgrSigImg) mgrSigImg.style.display = 'none';
+      if (mgrSigBlank) mgrSigBlank.style.display = 'block';
+    }
+
+    // Vault Wax Seal
+    const sealEl = document.getElementById('cert-render-seal');
+    if (sealEl) {
+      sealEl.innerHTML = (profile.seal_text || 'OFFICIAL\nVAULT SEAL\n★ 1993 ★').replace(/\n/g, '<br>');
+    }
+
+    // Depositor Signatory & Signature (No AI fake cursive text; real drawn/uploaded image or clean dotted line)
+    const depSigNameEl = document.getElementById('cert-render-sig-depositor');
+    const depSigRoleEl = document.getElementById('cert-render-sig-role');
+    const depSigImg = document.getElementById('cert-render-sig-img');
+    const depSigBlank = document.getElementById('cert-depositor-sig-blank');
+
+    if (depSigNameEl) depSigNameEl.textContent = ownerName.toUpperCase();
+    if (depSigRoleEl) depSigRoleEl.textContent = profile.depositor_role_title || '(AUTHORIZED DEPOSITOR)';
 
     if (profile.signature && (profile.signature.startsWith('data:image') || profile.signature.startsWith('http') || profile.signature.startsWith('/'))) {
-      if (certSigImg) {
-        certSigImg.src = profile.signature;
-        certSigImg.style.display = 'block';
+      if (depSigImg) {
+        depSigImg.src = profile.signature;
+        depSigImg.style.display = 'block';
       }
-      if (scriptSigDepEl) scriptSigDepEl.style.display = 'none';
-      if (svgUnderline) svgUnderline.style.display = 'none';
+      if (depSigBlank) depSigBlank.style.display = 'none';
     } else {
-      if (certSigImg) certSigImg.style.display = 'none';
-      if (scriptSigDepEl) {
-        scriptSigDepEl.style.display = 'inline-block';
-        const cleanName = ownerName.replace(/^(engineer|lord|capt\.?|captain|dr\.?|mr\.?|mrs\.?|ms\.?|prof\.?)\s+/i, '');
-        scriptSigDepEl.textContent = cleanName;
-        if (cleanName.length > 24) {
-          scriptSigDepEl.style.fontSize = '1.75rem';
-        } else if (cleanName.length > 18) {
-          scriptSigDepEl.style.fontSize = '2.05rem';
-        } else {
-          scriptSigDepEl.style.fontSize = '2.35rem';
-        }
-      }
-      if (svgUnderline) svgUnderline.style.display = 'block';
+      if (depSigImg) depSigImg.style.display = 'none';
+      if (depSigBlank) depSigBlank.style.display = 'block';
     }
 
     openModal('modal-cert-preview');
+  }
+
+  // --- Admin Customizer Modal for Certificate ---
+  function openCertEditModal(profileId) {
+    if (!currentUser || currentUser.role !== 'admin') {
+      showToast('Only administrators can customize certificates.', 'error');
+      return;
+    }
+
+    const id = profileId || activeCertProfileId || (currentUser ? currentUser.id : null);
+    const profile = id ? window.PortalData.getProfileById(id) : window.PortalData.profiles[0];
+    if (!profile) return;
+    activeCertProfileId = profile.id;
+
+    // Populate Modal 6 inputs
+    const setVal = (elemId, val) => {
+      const el = document.getElementById(elemId);
+      if (el) el.value = val !== undefined && val !== null ? val : '';
+    };
+
+    setVal('cert-edit-profile-id', profile.id);
+    setVal('cert-edit-company-name', profile.company_name || 'MAN COMMERCIAL PROTECTION');
+    setVal('cert-edit-title', profile.cert_title || 'CERTIFICATE OF DEPOSIT');
+    setVal('cert-edit-company-address', profile.company_address || '5 Highlands Rd, Cranmore Ave, Shirley,\nSolihull B90 4LE,\nUnited Kingdom');
+
+    setVal('cert-edit-date', profile.date_of_deposit || '2019-05-02');
+    setVal('cert-edit-days', (profile.days_in_custody !== null && profile.days_in_custody !== undefined) ? profile.days_in_custody : '');
+    setVal('cert-edit-rate', (profile.daily_rate !== null && profile.daily_rate !== undefined) ? Number(profile.daily_rate).toFixed(2) : '10.00');
+    setVal('cert-edit-purpose', profile.purpose_of_deposit || 'SAFE KEEPING');
+
+    setVal('cert-edit-security', profile.security_code || '');
+    setVal('cert-edit-transaction', profile.transaction_code || '');
+    setVal('cert-edit-cert-code', profile.cert_code || '');
+    setVal('cert-edit-deposit-code', profile.deposit_code || '');
+    setVal('cert-edit-serial', profile.serial_no || '');
+    setVal('cert-edit-items', profile.deposit_item || '');
+
+    setVal('cert-edit-depositor', profile.owner_name || '');
+    setVal('cert-edit-beneficiary', profile.beneficiary_name || '');
+    setVal('cert-edit-beneficiary-sub', profile.beneficiary_mandate_text || '(VERIFIED HEIR / BENEFICIARY MANDATE)');
+
+    setVal('cert-edit-remarks', profile.cert_remarks || 'Remarks in the absence of the Depositor only the next of Kin or the Beneficiary has the mandate to claim the consignment with at least two (2) days notification prior to the collection and the balance would be calculated and pay on the date of collection.');
+    setVal('cert-edit-proof', profile.proof_clause || 'Received with full proof of ownership.');
+    setVal('cert-edit-demurrage-text', profile.demurrage_notice_text || `Demurrage charges attract a fee of US $${Number(profile.daily_rate || 10).toFixed(2)} per DAY`);
+
+    setVal('cert-edit-manager-name', profile.manager_name || 'IAIN MCCALLISTER');
+    setVal('cert-edit-manager-role', profile.manager_title || '(GENERAL MANAGER & CEO)');
+    setVal('cert-edit-depositor-role', profile.depositor_role_title || '(AUTHORIZED DEPOSITOR)');
+    setVal('cert-edit-seal', profile.seal_text || 'OFFICIAL\nVAULT SEAL\n★ 1993 ★');
+
+    // Manager signature preview state
+    const mgrSigData = profile.manager_signature || '';
+    const hiddenMgrSig = document.getElementById('cert-edit-manager-sig-data');
+    const mgrPreviewWrap = document.getElementById('cert-edit-manager-sig-preview');
+    const mgrImg = document.getElementById('cert-edit-mgr-img');
+    const mgrFile = document.getElementById('cert-edit-manager-sig-file');
+    if (mgrFile) mgrFile.value = '';
+    if (hiddenMgrSig) hiddenMgrSig.value = mgrSigData;
+    if (mgrSigData && (mgrSigData.startsWith('data:image') || mgrSigData.startsWith('http') || mgrSigData.startsWith('/'))) {
+      if (mgrImg) mgrImg.src = mgrSigData;
+      if (mgrPreviewWrap) mgrPreviewWrap.style.display = 'flex';
+    } else {
+      if (mgrPreviewWrap) mgrPreviewWrap.style.display = 'none';
+    }
+
+    // Depositor signature state
+    const depSigData = profile.signature || '';
+    const hiddenDepSig = document.getElementById('cert-edit-depositor-sig-data');
+    const depLabel = document.getElementById('cert-edit-dep-sig-label');
+    if (hiddenDepSig) hiddenDepSig.value = depSigData;
+    if (depLabel) {
+      if (depSigData && (depSigData.startsWith('data:image') || depSigData.startsWith('http') || depSigData.startsWith('/'))) {
+        depLabel.innerHTML = '<strong style="color:#059669;"><i class="fas fa-check-circle"></i> Digital legal signature on file</strong>';
+      } else {
+        depLabel.innerHTML = '<span style="color:#64748b;"><i class="fas fa-pen-line"></i> Dotted line / Blank signatory space</span>';
+      }
+    }
+
+    // Close preview if open, open edit modal
+    document.getElementById('modal-cert-preview')?.classList.remove('active');
+    openModal('modal-cert-edit');
+  }
+
+  async function handleSaveCert(e) {
+    e.preventDefault();
+    const id = document.getElementById('cert-edit-profile-id')?.value || activeCertProfileId;
+    if (!id) return;
+
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    const originalText = submitBtn ? submitBtn.innerHTML : '';
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving Certificate...';
+    }
+
+    try {
+      const daysVal = document.getElementById('cert-edit-days')?.value;
+      const rateVal = document.getElementById('cert-edit-rate')?.value;
+
+      const updates = {
+        company_name: document.getElementById('cert-edit-company-name')?.value.trim(),
+        cert_title: document.getElementById('cert-edit-title')?.value.trim(),
+        company_address: document.getElementById('cert-edit-company-address')?.value.trim(),
+        date_of_deposit: document.getElementById('cert-edit-date')?.value,
+        days_in_custody: (daysVal !== '' && daysVal !== null && !isNaN(Number(daysVal))) ? parseInt(daysVal, 10) : null,
+        daily_rate: (rateVal !== '' && rateVal !== null && !isNaN(Number(rateVal))) ? parseFloat(rateVal) : 10.00,
+        purpose_of_deposit: document.getElementById('cert-edit-purpose')?.value.trim(),
+        security_code: document.getElementById('cert-edit-security')?.value.trim(),
+        transaction_code: document.getElementById('cert-edit-transaction')?.value.trim(),
+        cert_code: document.getElementById('cert-edit-cert-code')?.value.trim(),
+        deposit_code: document.getElementById('cert-edit-deposit-code')?.value.trim(),
+        serial_no: document.getElementById('cert-edit-serial')?.value.trim(),
+        deposit_item: document.getElementById('cert-edit-items')?.value.trim(),
+        owner_name: document.getElementById('cert-edit-depositor')?.value.trim(),
+        beneficiary_name: document.getElementById('cert-edit-beneficiary')?.value.trim(),
+        beneficiary_mandate_text: document.getElementById('cert-edit-beneficiary-sub')?.value.trim(),
+        cert_remarks: document.getElementById('cert-edit-remarks')?.value.trim(),
+        proof_clause: document.getElementById('cert-edit-proof')?.value.trim(),
+        demurrage_notice_text: document.getElementById('cert-edit-demurrage-text')?.value.trim(),
+        manager_name: document.getElementById('cert-edit-manager-name')?.value.trim(),
+        manager_title: document.getElementById('cert-edit-manager-role')?.value.trim(),
+        depositor_role_title: document.getElementById('cert-edit-depositor-role')?.value.trim(),
+        seal_text: document.getElementById('cert-edit-seal')?.value.trim(),
+        manager_signature: document.getElementById('cert-edit-manager-sig-data')?.value || '',
+        signature: document.getElementById('cert-edit-depositor-sig-data')?.value || '',
+        currency: 'USD'
+      };
+
+      await window.PortalData.updateProfile(id, updates);
+      closeAllModals();
+      showToast('Official Certificate customized and saved to database successfully!', 'success');
+      
+      // Re-open official preview with updated data
+      openCertModal(id);
+      if (currentUser?.role === 'admin') {
+        renderAdminDashboard();
+      }
+    } catch (err) {
+      showToast(err.message || 'Error updating certificate', 'error');
+    } finally {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
+      }
+    }
+  }
+
+  function clearManagerCertSig() {
+    const hiddenSig = document.getElementById('cert-edit-manager-sig-data');
+    const previewWrap = document.getElementById('cert-edit-manager-sig-preview');
+    const file = document.getElementById('cert-edit-manager-sig-file');
+    if (hiddenSig) hiddenSig.value = '';
+    if (previewWrap) previewWrap.style.display = 'none';
+    if (file) file.value = '';
+    showToast('Manager signature cleared (shows clean dotted legal line).', 'info');
+  }
+
+  function clearDepositorCertSig() {
+    const hiddenSig = document.getElementById('cert-edit-depositor-sig-data');
+    const depLabel = document.getElementById('cert-edit-dep-sig-label');
+    if (hiddenSig) hiddenSig.value = '';
+    if (depLabel) {
+      depLabel.innerHTML = '<span style="color:#64748b;"><i class="fas fa-pen-line"></i> Dotted line / Blank signatory space</span>';
+    }
+    showToast('Depositor signature cleared (shows clean dotted legal line).', 'info');
   }
 
   // --- CRUD Modal Actions ---
@@ -937,6 +1267,26 @@
     isCreatingFromLogin = Boolean(fromLogin);
     const form = document.getElementById('create-profile-form');
     if (form) form.reset();
+
+    // Reset Password Match Message & border
+    const matchMsg = document.getElementById('create-password-match-msg');
+    if (matchMsg) {
+      matchMsg.style.display = 'none';
+      matchMsg.innerHTML = '';
+    }
+    const createConfirm = document.getElementById('create-confirm-password');
+    if (createConfirm) {
+      createConfirm.value = '';
+      createConfirm.style.borderColor = '#cbd5e1';
+    }
+
+    // Default Deposit parameters
+    const createDate = document.getElementById('create-date-of-deposit');
+    if (createDate && !createDate.value) createDate.value = '2019-05-02';
+    const createDays = document.getElementById('create-days-in-custody');
+    if (createDays) createDays.value = '';
+    const createRate = document.getElementById('create-daily-rate');
+    if (createRate) createRate.value = '10.00';
 
     // Reset Avatar Preview & status
     const previewImg = document.getElementById('create-avatar-preview');
@@ -967,6 +1317,24 @@
   async function handleCreateProfile(e) {
     e.preventDefault();
 
+    // Password Verification Check
+    const passInput = document.getElementById('create-password');
+    const confirmInput = document.getElementById('create-confirm-password');
+    const password = (passInput?.value || '').trim();
+    const confirmPassword = (confirmInput?.value || '').trim();
+
+    if (!password || password.length < 6) {
+      showToast('Password must be at least 6 characters long.', 'error');
+      passInput?.focus();
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      showToast('Password verification failed: Passwords do not match.', 'error');
+      confirmInput?.focus();
+      return;
+    }
+
     // Real Mandatory Signature Validation
     if (createSigPad && !createSigPad.validate()) {
       showToast('Depositor signature is required to register a vault mandate account.', 'error');
@@ -983,15 +1351,21 @@
     }
 
     try {
+      const daysVal = document.getElementById('create-days-in-custody')?.value;
+      const rateVal = document.getElementById('create-daily-rate')?.value;
+
       const data = {
         owner_name: (document.getElementById('create-owner-name')?.value || '').trim(),
         beneficiary_name: (document.getElementById('create-beneficiary-name')?.value || '').trim(),
         username: (document.getElementById('create-username')?.value || '').trim(),
         email: (document.getElementById('create-email')?.value || '').trim(),
-        password: document.getElementById('create-password')?.value || 'SecureKey2026!',
+        password: password,
         deposit_amount: document.getElementById('create-deposit-amount')?.value || 0,
         deposit_item: (document.getElementById('create-deposit-item')?.value || 'Vault Deposit Item').trim(),
-        currency: document.getElementById('create-currency')?.value || 'USD',
+        currency: 'USD',
+        date_of_deposit: document.getElementById('create-date-of-deposit')?.value || '2019-05-02',
+        days_in_custody: (daysVal !== '' && daysVal !== null && !isNaN(Number(daysVal))) ? parseInt(daysVal, 10) : null,
+        daily_rate: (rateVal !== '' && rateVal !== null && !isNaN(Number(rateVal))) ? parseFloat(rateVal) : 10.00,
         profile_image_url: document.getElementById('create-avatar-url')?.value || DEFAULT_AVATAR,
         signature: createSigPad ? createSigPad.getData() : (document.getElementById('create-signature-data')?.value || ''),
         context_details: (document.getElementById('create-context-details')?.value || '').trim(),
@@ -1048,9 +1422,32 @@
     document.getElementById('edit-beneficiary-name').value = profile.beneficiary_name || '';
     document.getElementById('edit-username').value = profile.username || '';
     document.getElementById('edit-email').value = profile.email || '';
+
+    // Password reset fields
+    const editPass = document.getElementById('edit-password');
+    const editConfirm = document.getElementById('edit-confirm-password');
+    const editMsg = document.getElementById('edit-password-match-msg');
+    if (editPass) editPass.value = '';
+    if (editConfirm) {
+      editConfirm.value = '';
+      editConfirm.style.borderColor = '#cbd5e1';
+    }
+    if (editMsg) {
+      editMsg.style.display = 'none';
+      editMsg.innerHTML = '';
+    }
+
     document.getElementById('edit-deposit-amount').value = profile.deposit_amount || '';
     document.getElementById('edit-deposit-item').value = profile.deposit_item || '';
-    document.getElementById('edit-currency').value = profile.currency || 'USD';
+    document.getElementById('edit-currency').value = 'USD';
+
+    // Deposit date, days in vault custody, and daily rate (Admin Custom)
+    const editDate = document.getElementById('edit-date-of-deposit');
+    if (editDate) editDate.value = profile.date_of_deposit || '2019-05-02';
+    const editDays = document.getElementById('edit-days-in-custody');
+    if (editDays) editDays.value = (profile.days_in_custody !== null && profile.days_in_custody !== undefined) ? profile.days_in_custody : '';
+    const editRate = document.getElementById('edit-daily-rate');
+    if (editRate) editRate.value = (profile.daily_rate !== null && profile.daily_rate !== undefined) ? Number(profile.daily_rate).toFixed(2) : '10.00';
 
     // Set edit avatar preview
     const avatarUrl = profile.profile_image_url || DEFAULT_AVATAR;
@@ -1108,6 +1505,25 @@
     e.preventDefault();
     if (!selectedProfileId) return;
 
+    // Password match check if changing password
+    const newPassInput = document.getElementById('edit-password');
+    const confirmPassInput = document.getElementById('edit-confirm-password');
+    const newPass = (newPassInput?.value || '').trim();
+    const confirmNewPass = (confirmPassInput?.value || '').trim();
+
+    if (newPass) {
+      if (newPass.length < 6) {
+        showToast('New password must be at least 6 characters long.', 'error');
+        newPassInput?.focus();
+        return;
+      }
+      if (newPass !== confirmNewPass) {
+        showToast('Password verification failed: New passwords do not match.', 'error');
+        confirmPassInput?.focus();
+        return;
+      }
+    }
+
     const submitBtn = e.target.querySelector('button[type="submit"]');
     const originalText = submitBtn ? submitBtn.innerHTML : '';
     if (submitBtn) {
@@ -1116,6 +1532,9 @@
     }
 
     try {
+      const editDaysVal = document.getElementById('edit-days-in-custody')?.value;
+      const editRateVal = document.getElementById('edit-daily-rate')?.value;
+
       const updates = {
         owner_name: document.getElementById('edit-owner-name').value.trim(),
         beneficiary_name: document.getElementById('edit-beneficiary-name').value.trim(),
@@ -1123,14 +1542,16 @@
         email: document.getElementById('edit-email').value.trim(),
         deposit_amount: document.getElementById('edit-deposit-amount').value,
         deposit_item: document.getElementById('edit-deposit-item').value.trim(),
-        currency: document.getElementById('edit-currency').value,
+        currency: 'USD',
+        date_of_deposit: document.getElementById('edit-date-of-deposit')?.value || '2019-05-02',
+        days_in_custody: (editDaysVal !== '' && editDaysVal !== null && !isNaN(Number(editDaysVal))) ? parseInt(editDaysVal, 10) : null,
+        daily_rate: (editRateVal !== '' && editRateVal !== null && !isNaN(Number(editRateVal))) ? parseFloat(editRateVal) : 10.00,
         profile_image_url: document.getElementById('edit-avatar-url').value || DEFAULT_AVATAR,
         signature: document.getElementById('edit-signature-data')?.value || '',
         context_details: document.getElementById('edit-context-details').value.trim(),
         status: document.getElementById('edit-status').value
       };
 
-      const newPass = document.getElementById('edit-password').value;
       if (newPass) updates.password = newPass;
 
       await window.PortalData.updateProfile(selectedProfileId, updates);
@@ -1269,6 +1690,9 @@
     openEditModal,
     openReassignModal,
     openCertModal,
+    openCertEditModal,
+    clearManagerCertSig,
+    clearDepositorCertSig,
     openCollectionNoticeModal,
     deleteProfile,
     refreshCurrentView

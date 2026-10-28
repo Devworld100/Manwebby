@@ -23,7 +23,7 @@
       deposit_item: 'GOLD (490Kilos)',
       currency: 'USD',
       profile_image_url: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=180&auto=format&fit=crop&q=80',
-      signature: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="90" viewBox="0 0 300 90"><path d="M22 55 C 28 25, 40 22, 48 36 C 54 48, 48 68, 56 65 C 68 60, 75 35, 84 42 C 90 50, 86 64, 98 62 C 108 58, 116 42, 124 45 C 134 50, 140 64, 150 60 C 162 55, 172 36, 182 40 C 192 44, 198 62, 210 58 C 224 55, 240 36, 255 42 C 268 48, 278 62, 290 60" fill="none" stroke="%231d4ed8" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M30 68 C 85 62, 180 65, 290 62" fill="none" stroke="%231d4ed8" stroke-width="1.8" stroke-linecap="round" opacity="0.85"/></svg>',
+      signature: '',
       context_details: 'Certificate of Deposit Code: 316SJ17 | Security Code: 0147 | Transaction Code: 529138 | Deposit Code: 198308MZL14 | Serial No: 01479040198308. Consignment deposited on 2nd May 2019 under Safe Keeping protocol at Solihull Vault facility. Mandate clause: In the absence of the Depositor only the next of Kin or the Beneficiary (Anita Johnson & to whom it may concern) has the mandate to claim the consignment with at least two (2) days notification prior to collection. Demurrage rate: US $10.00 / day. Signatories: Iain McCallister (General Manager & CEO) & Engineer Steven Johnson (Depositor).',
       security_code: '0147',
       transaction_code: '529138',
@@ -31,6 +31,17 @@
       cert_code: '316SJ17',
       serial_no: '01479040198308',
       date_of_deposit: '2019-05-02',
+      days_in_custody: 2669,
+      daily_rate: 10.00,
+      purpose_of_deposit: 'SAFE KEEPING',
+      cert_remarks: 'Remarks in the absence of the Depositor only the next of Kin or the Beneficiary has the mandate to claim the consignment with at least two (2) days notification prior to the collection and the balance would be calculated and pay on the date of collection.\n\nReceived with full proof of ownership.',
+      manager_name: 'IAIN MCCALLISTER',
+      manager_title: '(GENERAL MANAGER & CEO)',
+      manager_signature: '',
+      seal_text: 'OFFICIAL\nVAULT SEAL\n★ 1993 ★',
+      company_address: '5 Highlands Rd, Cranmore Ave, Shirley,\nSolihull B90 4LE,\nUnited Kingdom',
+      cert_title: 'CERTIFICATE OF DEPOSIT',
+      beneficiary_mandate_text: 'ANITA JOHNSON & TO WHOM IT MAY CONCERN\n(MALE GENDER)',
       status: 'Active',
       created_at: '2019-05-02T10:00:00Z',
       updated_at: new Date().toISOString()
@@ -46,9 +57,9 @@
       beneficiary_name: 'Marcus Vance',
       deposit_amount: 4200000,
       deposit_item: 'Sovereign Bonds & Title Deeds',
-      currency: 'GBP',
+      currency: 'USD',
       profile_image_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=180&auto=format&fit=crop&q=80',
-      signature: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="90" viewBox="0 0 300 90"><path d="M25 50 C 35 20, 45 65, 55 25 C 65 60, 75 30, 85 55 C 100 45, 120 40, 150 45 C 180 50, 210 35, 240 40" fill="none" stroke="%231d4ed8" stroke-width="2.5" stroke-linecap="round"/></svg>',
+      signature: '',
       context_details: 'Certificate of Deposit Code: 482VA21 | Security Code: 0288 | Deposit Code: 202109VNC02. Consignment contains bearer instruments and certified UK sovereign bonds deposited for custody on 14th Sept 2021. High Court Probate granted naming Marcus Vance as sole designated claimant.',
       security_code: '0288',
       transaction_code: '614920',
@@ -56,6 +67,17 @@
       cert_code: '482VA21',
       serial_no: '02881940192881',
       date_of_deposit: '2021-09-14',
+      days_in_custody: 1870,
+      daily_rate: 10.00,
+      purpose_of_deposit: 'SAFE KEEPING',
+      cert_remarks: 'Remarks in the absence of the Depositor only the next of Kin or the Beneficiary has the mandate to claim the consignment with at least two (2) days notification prior to the collection and the balance would be calculated and pay on the date of collection.\n\nReceived with full proof of ownership.',
+      manager_name: 'IAIN MCCALLISTER',
+      manager_title: '(GENERAL MANAGER & CEO)',
+      manager_signature: '',
+      seal_text: 'OFFICIAL\nVAULT SEAL\n★ 1993 ★',
+      company_address: '5 Highlands Rd, Cranmore Ave, Shirley,\nSolihull B90 4LE,\nUnited Kingdom',
+      cert_title: 'CERTIFICATE OF DEPOSIT',
+      beneficiary_mandate_text: 'MARCUS VANCE\n(VERIFIED HEIR / BENEFICIARY MANDATE)',
       status: 'Active',
       created_at: '2021-09-14T11:30:00Z',
       updated_at: new Date().toISOString()
@@ -73,7 +95,7 @@
       deposit_item: 'Rough & Cut Diamonds (1,250 Carats)',
       currency: 'USD',
       profile_image_url: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=180&auto=format&fit=crop&q=80',
-      signature: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="90" viewBox="0 0 300 90"><path d="M30 45 C 50 20, 60 70, 80 35 C 100 65, 130 30, 160 50 C 190 35, 230 45, 270 40" fill="none" stroke="%231d4ed8" stroke-width="2.5" stroke-linecap="round"/></svg>',
+      signature: '',
       context_details: 'Certificate of Deposit Code: 591CH22 | Security Code: 0359 | Deposit Code: 202211CHN03. GIA certified gemstone parcel locked in Solihull High-Security Safe 4B. Beneficiary mandate verified under international probate convention.',
       security_code: '0359',
       transaction_code: '782341',
@@ -81,6 +103,17 @@
       cert_code: '591CH22',
       serial_no: '03590123849102',
       date_of_deposit: '2022-11-20',
+      days_in_custody: 1438,
+      daily_rate: 10.00,
+      purpose_of_deposit: 'SAFE KEEPING',
+      cert_remarks: 'Remarks in the absence of the Depositor only the next of Kin or the Beneficiary has the mandate to claim the consignment with at least two (2) days notification prior to the collection and the balance would be calculated and pay on the date of collection.\n\nReceived with full proof of ownership.',
+      manager_name: 'IAIN MCCALLISTER',
+      manager_title: '(GENERAL MANAGER & CEO)',
+      manager_signature: '',
+      seal_text: 'OFFICIAL\nVAULT SEAL\n★ 1993 ★',
+      company_address: '5 Highlands Rd, Cranmore Ave, Shirley,\nSolihull B90 4LE,\nUnited Kingdom',
+      cert_title: 'CERTIFICATE OF DEPOSIT',
+      beneficiary_mandate_text: 'DR. SOPHIA CHEN\n(VERIFIED HEIR / BENEFICIARY MANDATE)',
       status: 'Active',
       created_at: '2022-11-20T09:00:00Z',
       updated_at: new Date().toISOString()
@@ -96,9 +129,9 @@
       beneficiary_name: 'Estate Trustee (Pending Heir Kinship)',
       deposit_amount: 3100000,
       deposit_item: 'Rare Numismatic Coins & Charter Deeds',
-      currency: 'GBP',
+      currency: 'USD',
       profile_image_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=180&auto=format&fit=crop&q=80',
-      signature: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="90" viewBox="0 0 300 90"><path d="M20 50 Q 80 20, 140 45 T 260 40" fill="none" stroke="%231d4ed8" stroke-width="2.5" stroke-linecap="round"/></svg>',
+      signature: '',
       context_details: 'Certificate of Deposit Code: 604HR23 | Security Code: 0412 | Deposit Code: 202304HRG04. Account created with preliminary estate representation. Ready for dynamic administrator reassignment once direct heir kinship is confirmed by High Court Probate.',
       security_code: '0412',
       transaction_code: '905182',
@@ -106,6 +139,17 @@
       cert_code: '604HR23',
       serial_no: '04128910492819',
       date_of_deposit: '2023-04-10',
+      days_in_custody: 1297,
+      daily_rate: 10.00,
+      purpose_of_deposit: 'SAFE KEEPING',
+      cert_remarks: 'Remarks in the absence of the Depositor only the next of Kin or the Beneficiary has the mandate to claim the consignment with at least two (2) days notification prior to the collection and the balance would be calculated and pay on the date of collection.\n\nReceived with full proof of ownership.',
+      manager_name: 'IAIN MCCALLISTER',
+      manager_title: '(GENERAL MANAGER & CEO)',
+      manager_signature: '',
+      seal_text: 'OFFICIAL\nVAULT SEAL\n★ 1993 ★',
+      company_address: '5 Highlands Rd, Cranmore Ave, Shirley,\nSolihull B90 4LE,\nUnited Kingdom',
+      cert_title: 'CERTIFICATE OF DEPOSIT',
+      beneficiary_mandate_text: 'ESTATE TRUSTEE\n(PENDING HEIR KINSHIP PROBATE)',
       status: 'Pending',
       created_at: '2023-04-10T14:15:00Z',
       updated_at: new Date().toISOString()
@@ -131,6 +175,28 @@
       } catch (e) {
         this.profiles = [...SEED_PROFILES];
       }
+
+      // Enforce USD currency, remove fake AI svg signatures, and default days/rate
+      let changed = false;
+      this.profiles.forEach(p => {
+        if (p.currency !== 'USD') {
+          p.currency = 'USD';
+          changed = true;
+        }
+        if (p.signature && p.signature.startsWith('data:image/svg+xml')) {
+          p.signature = '';
+          changed = true;
+        }
+        if (p.daily_rate === undefined || p.daily_rate === null) {
+          p.daily_rate = 10.00;
+          changed = true;
+        }
+        if (p.username === 'anita.johnson' && (p.days_in_custody === undefined || p.days_in_custody === null)) {
+          p.days_in_custody = 2669;
+          changed = true;
+        }
+      });
+      if (changed) this.save();
 
       // Sync with server DB asynchronously
       this.syncFromServer();
@@ -293,8 +359,7 @@
       let totalVal = 0;
       this.profiles.forEach(p => {
         const amt = Number(p.deposit_amount) || 0;
-        const mult = p.currency === 'GBP' ? 1.30 : (p.currency === 'EUR' ? 1.08 : 1.0);
-        totalVal += amt * mult;
+        totalVal += amt;
       });
 
       let formattedVal = '$0.00';
@@ -479,12 +544,20 @@
 
     calculateDemurrage(dateOrProfile, rate = 10.00, currency = 'USD') {
       let depositDateStr = '2019-05-02';
-      let curr = currency || 'USD';
+      let curr = 'USD';
       let dailyRate = Number(rate) || 10.00;
+      let customDays = null;
 
       if (dateOrProfile && typeof dateOrProfile === 'object' && !(dateOrProfile instanceof Date)) {
         depositDateStr = dateOrProfile.date_of_deposit || '2019-05-02';
-        curr = dateOrProfile.currency || curr;
+        curr = 'USD';
+        if (dateOrProfile.daily_rate !== undefined && dateOrProfile.daily_rate !== null && dateOrProfile.daily_rate !== '') {
+          dailyRate = Number(dateOrProfile.daily_rate);
+          if (isNaN(dailyRate)) dailyRate = 10.00;
+        }
+        if (dateOrProfile.days_in_custody !== undefined && dateOrProfile.days_in_custody !== null && dateOrProfile.days_in_custody !== '') {
+          customDays = Number(dateOrProfile.days_in_custody);
+        }
       } else if (typeof dateOrProfile === 'string' && dateOrProfile) {
         depositDateStr = dateOrProfile;
       } else if (dateOrProfile instanceof Date) {
@@ -495,16 +568,17 @@
       const validDate = isNaN(depositDate.getTime()) ? new Date('2019-05-02') : depositDate;
       const now = new Date();
       const diffTime = Math.max(0, now - validDate);
-      const diffDays = Math.max(1, Math.floor(diffTime / (1000 * 60 * 60 * 24)));
+      const autoDays = Math.max(1, Math.floor(diffTime / (1000 * 60 * 60 * 24)));
+      const diffDays = (customDays !== null && !isNaN(customDays) && customDays >= 0) ? customDays : autoDays;
       const totalAccrued = diffDays * dailyRate;
-      const symbol = (curr === 'GBP') ? '£' : ((curr === 'EUR') ? '€' : '$');
+      const symbol = '$';
 
       return {
         depositDate: validDate,
         days: diffDays,
         dailyRate: dailyRate,
         symbol: symbol,
-        currency: curr,
+        currency: 'USD',
         total: totalAccrued,
         formattedTotal: symbol + totalAccrued.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
         depositDateFormatted: validDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
